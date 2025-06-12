@@ -1,0 +1,60 @@
+/* --- Import main styles --- */
+/*@import "styles/main.css";
+@import "styles/colourful.css"; */
+
+/* --- Colour selection --- */
+/* @import "colours/CatMocha.css";*/
+
+* {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+window#waybar {
+  background-color: #1e1e2e;
+}
+
+#custom-apps,
+#custom-notifications,
+#clock,
+#pulseaudio {
+  background-color: #313244;
+  border-radius: 15px;
+  margin-right: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+#clock {
+  color: #fab387;
+}
+
+#pulseaudio {
+  color: #74c7ec;
+}
+
+#custom-notifications {
+  color: #cba6f7;
+  padding-left: 1px;
+  padding-right: 3px;
+}
+
+#custom-apps {
+  margin-left: 5px;
+  font-size: 30px;
+  background-image: url("/home/optimusprime/Pictures/yae-miko-chibi.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#workspaces button {
+  color: #eba0ac;
+}
+
+#workspaces button.active {
+  color: #f38ba8;
+}

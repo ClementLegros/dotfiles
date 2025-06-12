@@ -1,0 +1,72 @@
+{
+  "layer": "top",
+  "position": "top",
+  "reload_style_on_change": true,
+  "modules-left": ["custom/apps", "hyprland/workspaces", "custom/updates"],
+  "modules-right": [
+    "group/power",
+    "battery",
+    "pulseaudio",
+    "custom/powerbar",
+    "clock",
+    "custom/notifications",
+  ],
+  "custom/apps": {
+    "format": "   ",
+    "tooltip": false,
+    "on-click": "tofi-drun -c ~/.config/tofi/config --drun-launch=true",
+  },
+  "custom/notifications": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "",
+      "none": "",
+      "dnd-notification": "",
+      "dnd-none": "",
+      "inhibited-notification": "",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "",
+      "dnd-inhibited-none": "",
+    },
+
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true,
+  },
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "tooltip": false,
+    "format-icons": {
+      "1": "",
+      "2": "",
+      "3": "",
+      "4": "",
+      "5": "",
+      "urgent": "",
+      "active": "",
+      "default": "",
+    },
+    "persistent-workspaces": {
+      "*": 5,
+    },
+  },
+
+  "clock": {
+    "format": "  {:%H:%M}",
+  },
+
+  "pulseaudio": {
+    "tooltip": false,
+    "scroll-step": 5,
+    "format": "{icon} {volume}%",
+    "format-muted": "muted",
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "format-icons": {
+      "default": ["", "", ""],
+    },
+  },
+}
