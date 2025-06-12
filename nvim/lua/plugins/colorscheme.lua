@@ -4,6 +4,11 @@ return {
     lazy = true,
     name = "catppuccin",
     opts = {
+      transparent_background = true,
+      dim_inactive = {
+        shade = "dark",
+        percentage = 0.20,
+      },
       integrations = {
         aerial = true,
         alpha = true,
