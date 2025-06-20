@@ -38,12 +38,13 @@ window#waybar {
 
 #custom-notifications {
   color: #cba6f7;
-  padding-left: 1px;
-  padding-right: 3px;
+  padding-left: 14px;
+  padding-right: 16px;
 }
 
 #custom-apps {
   margin-left: 5px;
+  background-color: transparent;
   font-size: 30px;
   background-image: url("/home/optimusprime/Pictures/yae-miko-chibi.png");
   background-position: center;
