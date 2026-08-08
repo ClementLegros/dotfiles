@@ -1,0 +1,238 @@
+#!/bin/bash
+# Menu Bluetooth pour waybar.
+# Les infos viennent de l'API D-Bus de BlueZ (org.bluez) et non du parsing de
+# `bluetoothctl devices`, qui n'expose que l'Alias — lequel vaut le MAC en
+# tirets tant que l'appareil n'a pas annoncé son nom.
+
+SCAN_SECONDS=10
+SHOW_UNNAMED=0        # 1 pour lister aussi les appareils sans nom annoncé
+MIN_WIDTH=380         # largeur plancher de la popup, en px
+MAX_WIDTH=620         # largeur plafond au-delà de laquelle on tronque
+
+LOCKFILE="${XDG_RUNTIME_DIR:-/tmp}/waybar-bluetooth-menu.pid"
+ROFI_PID=""
+SCAN_PID=""
+MENU_IDX=""
+
+cleanup() {
+    [ -n "$ROFI_PID" ] && kill "$ROFI_PID" 2>/dev/null
+    [ -n "$SCAN_PID" ] && kill "$SCAN_PID" 2>/dev/null
+    rm -f "$LOCKFILE"
+}
+trap 'cleanup; exit 0' TERM INT
+trap cleanup EXIT
+
+# Deuxième clic sur le module waybar : on termine l'instance déjà ouverte, dont
+# le trap TERM ferme son propre rofi. La popup se referme au lieu de se rouvrir.
+if [ -f "$LOCKFILE" ]; then
+    OLD_PID=$(cat "$LOCKFILE" 2>/dev/null)
+    if [ -n "$OLD_PID" ] && [ "$OLD_PID" != "$$" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+        kill -TERM "$OLD_PID" 2>/dev/null
+        trap - EXIT   # le lock appartient à l'autre instance, ne pas l'effacer
+        exit 0
+    fi
+fi
+echo $$ > "$LOCKFILE"
+
+# Tableaux parallèles : le MAC n'est jamais affiché, rofi renvoie l'index.
+LABELS=()
+MACS=()
+
+# Renvoie une ligne "glyphe  nom<TAB>MAC" par appareil, triée :
+# connectés d'abord, puis appairés, puis par puissance de signal.
+#
+# Via python-dbus et non `busctl --json` : busctl échoue en bloc
+# ("Failed to dump DBus message to JSON object") dès qu'un appareil découvert
+# expose des propriétés non convertibles en JSON (ManufacturerData, clés
+# entières...), ce qui vidait toute la liste après un scan.
+list_devices() {
+    python3 - "$SHOW_UNNAMED" <<'PYEOF'
+import re
+import sys
+
+try:
+    import dbus
+except ImportError:
+    sys.exit(0)
+
+show_unnamed = sys.argv[1] == "1"
+
+# BlueZ classe les appareils via la propriété Icon (nom d'icône freedesktop).
+GLYPHS = {
+    "audio-headphones": "\U000f02cb",
+    "audio-headset":    "\U000f02cb",
+    "audio-card":       "\U000f04c3",
+    "input-mouse":      "\U000f037d",
+    "input-keyboard":   "\U000f030c",
+    "input-gaming":     "\U000f0eb5",
+    "phone":            "\U000f011c",
+    "computer":         "\U000f01c4",
+    "camera-photo":     "\U000f0100",
+    "printer":          "\U000f042a",
+}
+DEFAULT_GLYPH   = "\U000f00af"  # bluetooth
+CONNECTED_GLYPH = "\U000f00b1"  # bluetooth-connect
+MAC_AS_NAME = re.compile(r"^([0-9A-Fa-f]{2}[-:]){5}[0-9A-Fa-f]{2}$")
+
+try:
+    bus = dbus.SystemBus()
+    manager = dbus.Interface(
+        bus.get_object("org.bluez", "/"), "org.freedesktop.DBus.ObjectManager"
+    )
+    objects = manager.GetManagedObjects()
+except dbus.DBusException:
+    sys.exit(0)
+
+rows = []
+for interfaces in objects.values():
+    dev = interfaces.get("org.bluez.Device1")
+    if not dev:
+        continue
+
+    address = str(dev.get("Address", ""))
+    if not address:
+        continue
+
+    # Name = nom réellement annoncé par l'appareil ; Alias = nom éventuellement
+    # renommé par l'utilisateur, qui retombe sur le MAC quand rien n'est connu.
+    name = str(dev.get("Name", ""))
+    alias = str(dev.get("Alias", ""))
+    if alias and not MAC_AS_NAME.match(alias):
+        name = alias
+    if MAC_AS_NAME.match(name):
+        name = ""
+
+    if not name:
+        if not show_unnamed:
+            continue
+        name = address
+
+    connected = bool(dev.get("Connected", False))
+    paired = bool(dev.get("Paired", False))
+    rssi = dev.get("RSSI")
+    icon = str(dev.get("Icon", ""))
+    glyph = CONNECTED_GLYPH if connected else GLYPHS.get(icon, DEFAULT_GLYPH)
+
+    rows.append((
+        0 if connected else 1,
+        0 if paired else 1,
+        -int(rssi) if rssi is not None else 9999,   # signal fort en premier
+        name.lower(),
+        "%s  %s\t%s" % (glyph, name, address),
+    ))
+
+rows.sort()
+for row in rows:
+    print(row[-1])
+PYEOF
+}
+
+build_menu() {
+    LABELS=("⏻  Désactiver Bluetooth" "󰑐  Scanner les appareils (${SCAN_SECONDS}s)")
+    MACS=("" "")
+
+    while IFS=$'\t' read -r label mac; do
+        [ -z "$mac" ] && continue
+        LABELS+=("$label")
+        MACS+=("$mac")
+    done < <(list_devices)
+}
+
+# rofi n'ajuste pas sa largeur au contenu : on la calcule sur l'entrée la plus
+# longue pour que les noms d'appareils ne soient jamais coupés.
+menu_width() {
+    local max=0 len width
+    for label in "${LABELS[@]}"; do
+        len=${#label}
+        (( len > max )) && max=$len
+    done
+    # ~10px par caractère + paddings fenêtre (28px) et élément (14px) de chaque côté
+    width=$(( max * 10 + 100 ))
+    (( width < MIN_WIDTH )) && width=$MIN_WIDTH
+    (( width > MAX_WIDTH )) && width=$MAX_WIDTH
+    echo "$width"
+}
+
+# Affiche LABELS dans rofi et place l'index choisi dans MENU_IDX.
+# Volontairement PAS via $(...) : une substitution de commande s'exécute dans un
+# sous-shell, ROFI_PID n'y serait pas visible depuis le parent et le trap TERM
+# resterait différé jusqu'à la fermeture de rofi — le second clic ne ferait rien.
+run_menu() {
+    local prompt="$1" max_lines="$2" lines infile outfile
+    MENU_IDX=""
+
+    # Nombre de rangées réel, sinon rofi réserve la place des 8 et laisse un
+    # grand vide sous la liste quand il y a peu d'appareils.
+    lines=${#LABELS[@]}
+    (( lines > max_lines )) && lines=$max_lines
+    (( lines < 1 )) && lines=1
+    infile=$(mktemp) || return 1
+    outfile=$(mktemp) || { rm -f "$infile"; return 1; }
+    printf '%s\n' "${LABELS[@]}" > "$infile"
+
+    rofi -dmenu -format i -p "$prompt" \
+        -no-show-icons \
+        -theme-str "window {width: $(menu_width)px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}" \
+        -theme-str "listview {lines: $lines;}" \
+        < "$infile" > "$outfile" 2>/dev/null &
+    ROFI_PID=$!
+    wait "$ROFI_PID" 2>/dev/null   # interruptible : le trap TERM s'exécute ici
+    ROFI_PID=""
+
+    MENU_IDX=$(< "$outfile")
+    rm -f "$infile" "$outfile"
+}
+
+adapter_powered() {
+    [ "$(busctl get-property org.bluez /org/bluez/hci0 org.bluez.Adapter1 Powered 2>/dev/null | awk '{print $2}')" = "true" ]
+}
+
+# Boucle : après chaque action le menu est reconstruit depuis l'état réel de
+# BlueZ, donc l'affichage reflète immédiatement le résultat du clic.
+while true; do
+    if ! adapter_powered; then
+        LABELS=("⏻  Activer Bluetooth")
+        MACS=("")
+        run_menu "󰂲  Bluetooth" 3
+        [ -z "$MENU_IDX" ] && exit 0
+        [ "$MENU_IDX" -lt 0 ] 2>/dev/null && exit 0
+        bluetoothctl power on >/dev/null 2>&1
+        continue
+    fi
+
+    build_menu
+    run_menu "󰂯  Bluetooth" 8
+
+    [ -z "$MENU_IDX" ] && exit 0
+    [ "$MENU_IDX" -lt 0 ] 2>/dev/null && exit 0
+
+    if [ "$MENU_IDX" -eq 0 ]; then
+        bluetoothctl power off >/dev/null 2>&1
+
+    elif [ "$MENU_IDX" -eq 1 ]; then
+        # Scan en arrière-plan + wait : laisse à BlueZ le temps de résoudre les
+        # noms (paquets EIR) tout en restant interruptible par un second clic.
+        bluetoothctl --timeout "$SCAN_SECONDS" scan on >/dev/null 2>&1 &
+        SCAN_PID=$!
+        wait "$SCAN_PID" 2>/dev/null
+        SCAN_PID=""
+
+    else
+        MAC="${MACS[$MENU_IDX]}"
+        [ -z "$MAC" ] && continue
+        DEV_PATH="/org/bluez/hci0/dev_${MAC//:/_}"
+
+        CONNECTED=$(busctl get-property org.bluez "$DEV_PATH" org.bluez.Device1 Connected 2>/dev/null | awk '{print $2}')
+
+        if [ "$CONNECTED" = "true" ]; then
+            bluetoothctl disconnect "$MAC" >/dev/null 2>&1
+        else
+            PAIRED=$(busctl get-property org.bluez "$DEV_PATH" org.bluez.Device1 Paired 2>/dev/null | awk '{print $2}')
+            if [ "$PAIRED" != "true" ]; then
+                bluetoothctl pair "$MAC" >/dev/null 2>&1
+                bluetoothctl trust "$MAC" >/dev/null 2>&1
+            fi
+            bluetoothctl connect "$MAC" >/dev/null 2>&1
+        fi
+    fi
+done

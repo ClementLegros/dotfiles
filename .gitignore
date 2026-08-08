@@ -1,0 +1,28 @@
+# Whitelist strategy: ~/.config is full of application *state* (caches, tokens,
+# session data). So ignore everything by default, then re-include only the
+# directories that are genuinely hand-written configuration.
+#
+# To start versioning another config:  add a  !/name/  line below.
+
+/*
+!/.gitignore
+
+# ── Hand-written config ──
+!/hypr/
+!/kitty/
+!/waybar/
+!/rofi/
+!/tmux/
+!/fastfetch/
+!/themes/
+!/starship.toml
+
+# ── Deliberately NOT versioned here ──
+# nvim/  — has its own repo (github.com/ClementLegros/nvim), versioned separately
+
+# ── Noise inside the whitelisted dirs ──
+# (leading **/ so these match at any depth, not just the repo root)
+**/.claude/settings.local.json
+tmux/plugins/
+*.swp
+*~

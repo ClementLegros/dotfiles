@@ -1,0 +1,116 @@
+{
+  "position": "top",
+  "reload_style_on_change": true,
+  "margin-top": 8,
+  "margin-left": 12,
+  "margin-right": 12,
+  "height": 36,
+
+  "modules-left": [
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "network",
+    "bluetooth",
+    "cpu",
+    "memory",
+    "battery",
+    "pulseaudio",
+    "custom/lock",
+    "custom/power"
+  ],
+
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "sort-by-number": true,
+    "format-icons": {
+      "active": "●",
+      "default": "○",
+      "urgent": "◉"
+    },
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
+
+  "clock": {
+    "format": "{:%H:%M  %a %d %b}",
+    "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+    "timezone": "Europe/Paris",
+    "locale": "fr_FR.UTF-8"
+  },
+
+  "network": {
+    "interface": "wlan*",
+    "format-wifi": "󰤨 {essid}",
+    "format-disconnected": "󰤭",
+    "format-ethernet": "󰈀 eth",
+    "tooltip-format-wifi": "{essid}  {signalStrength}%",
+    "tooltip-format-disconnected": "Déconnecté",
+    "on-click": "~/.config/waybar/script/wifi-menu"
+  },
+
+  "bluetooth": {
+    "format": "󰂲",
+    "format-on": "󰂯",
+    "format-connected": "󰂱 {device_alias}",
+    "tooltip-format": "Bluetooth : {status}",
+    "tooltip-format-connected": "{device_enumerate}",
+    "tooltip-format-enumerate-connected": "  {device_alias}",
+    "on-click": "~/.config/waybar/script/bluetooth-menu"
+  },
+
+  "cpu": {
+    "format": "󰍛 {usage}%",
+    "interval": 2,
+    "tooltip": false
+  },
+
+  "memory": {
+    "format": " {used:0.1f}G",
+    "interval": 3,
+    "tooltip": false
+  },
+
+  "battery": {
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰚥 {capacity}%",
+    "format-full": "󰁹 full",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "states": {
+      "warning": 25,
+      "critical": 10
+    },
+    "interval": 5,
+    "tooltip": false
+  },
+
+  "custom/lock": {
+    "format": "󰌾",
+    "tooltip": false,
+    "on-click": "hyprlock"
+  },
+
+  "custom/power": {
+    "format": "󰐥",
+    "tooltip": false,
+    "on-click": "systemctl poweroff"
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟 muted",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_SINK@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_SINK@ 5%-",
+    "tooltip": false
+  }
+}

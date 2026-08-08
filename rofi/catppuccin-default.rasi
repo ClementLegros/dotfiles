@@ -1,0 +1,202 @@
+// @import "catppuccin-latte"
+// @import "catppuccin-frappe"
+// @import "catppuccin-macchiato"
+@import "catppuccin-mocha"
+
+* {
+  /* Rôles couleurs */
+  background:                  @base;
+  foreground:                  @text;
+  lightbg:                     @surface0;
+  lightfg:                     @text;
+  separatorcolor:              @surface1;
+  border-color:                @lavender;
+  background-color:            transparent;
+
+  normal-background:           @base;
+  normal-foreground:           @text;
+  alternate-normal-background: @mantle;
+  alternate-normal-foreground: @subtext0;
+  selected-normal-background:  @lavender;
+  selected-normal-foreground:  @crust;
+
+  active-background:           @base;
+  active-foreground:           @blue;
+  alternate-active-background: @surface0;
+  alternate-active-foreground: @blue;
+  selected-active-background:  @blue;
+  selected-active-foreground:  @crust;
+
+  urgent-background:           @base;
+  urgent-foreground:           @red;
+  alternate-urgent-background: @surface0;
+  alternate-urgent-foreground: @red;
+  selected-urgent-background:  @red;
+  selected-urgent-foreground:  @crust;
+
+  spacing: 2;
+}
+
+window {
+    background-color: @base;
+    border:           2px;
+    border-color:     @lavender;
+    border-radius:    10px;
+    padding:          28px;
+    width:            640px;
+}
+
+mainbox {
+    padding: 0;
+    border:  0;
+    spacing: 14px;
+}
+
+inputbar {
+    padding:          14px 18px;
+    spacing:          10px;
+    text-color:       @text;
+    background-color: @surface0;
+    border-radius:    10px;
+    border:           0;
+    children:         [ "prompt", "entry" ];
+}
+
+prompt {
+    spacing:    0;
+    text-color: @lavender;
+}
+
+entry {
+    text-color:        @text;
+    cursor:            text;
+    spacing:           0;
+    placeholder-color: @overlay0;
+    placeholder:       "Rechercher...";
+}
+
+listview {
+    padding:      0;
+    scrollbar:    false;
+    spacing:      6px;
+    fixed-height: 0;
+    border:       0;
+    lines:        8;
+}
+
+element {
+    padding:       10px 14px;
+    cursor:        pointer;
+    spacing:       12px;
+    border:        0;
+    border-radius: 10px;
+}
+
+element normal.normal {
+    background-color: @normal-background;
+    text-color:       @normal-foreground;
+}
+element normal.urgent {
+    background-color: @urgent-background;
+    text-color:       @urgent-foreground;
+}
+element normal.active {
+    background-color: @active-background;
+    text-color:       @active-foreground;
+}
+element selected.normal {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+}
+element selected.urgent {
+    background-color: @selected-urgent-background;
+    text-color:       @selected-urgent-foreground;
+}
+element selected.active {
+    background-color: @selected-active-background;
+    text-color:       @selected-active-foreground;
+}
+element alternate.normal {
+    background-color: @alternate-normal-background;
+    text-color:       @alternate-normal-foreground;
+}
+element alternate.urgent {
+    background-color: @alternate-urgent-background;
+    text-color:       @alternate-urgent-foreground;
+}
+element alternate.active {
+    background-color: @alternate-active-background;
+    text-color:       @alternate-active-foreground;
+}
+
+element-text {
+    background-color: transparent;
+    cursor:           inherit;
+    highlight:        inherit;
+    text-color:       inherit;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             1.6em;
+    cursor:           inherit;
+    text-color:       inherit;
+}
+
+message {
+    padding:          10px 14px;
+    border:           0;
+    background-color: @surface0;
+    border-radius:    10px;
+}
+
+textbox {
+    text-color: @text;
+}
+
+scrollbar {
+    width:        4px;
+    padding:      0;
+    handle-width: 8px;
+    border:       0;
+    handle-color: @overlay0;
+}
+
+sidebar {
+    border:       0;
+    border-color: @separatorcolor;
+}
+
+button {
+    cursor:     pointer;
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+button selected {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+}
+
+num-filtered-rows {
+    expand:     false;
+    text-color: @overlay0;
+}
+num-rows {
+    expand:     false;
+    text-color: @overlay0;
+}
+textbox-num-sep {
+    expand:     false;
+    str:        "/";
+    text-color: @overlay0;
+}
+case-indicator {
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+textbox-prompt-colon {
+    margin:     0px 0.3000em 0.0000em 0.0000em;
+    expand:     false;
+    str:        ":";
+    text-color: inherit;
+}

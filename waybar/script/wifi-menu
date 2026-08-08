@@ -1,0 +1,46 @@
+#!/bin/bash
+IFACE="wlan0"
+
+iwctl station "$IFACE" scan 2>/dev/null
+
+CURRENT=$(iwctl station "$IFACE" show 2>/dev/null \
+    | awk '/Connected network/{print $3}')
+
+NETWORKS=$(iwctl station "$IFACE" get-networks 2>/dev/null \
+    | tail -n +5 \
+    | awk 'NF>0 {
+        gsub(/^[[:space:]>]+/, "")
+        gsub(/\033\[[0-9;]*m/, "")
+        if ($1 !~ /^-+$/) print $1
+    }')
+
+if [ -n "$CURRENT" ]; then
+    MENU="⏏  Déconnecter de $CURRENT\n$NETWORKS"
+else
+    MENU="$NETWORKS"
+fi
+
+CHOSEN=$(printf '%b' "$MENU" | rofi -dmenu \
+    -p "󰤨  WiFi" \
+    -theme-str 'window {width: 350px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}' \
+    -theme-str 'listview {lines: 8;}')
+
+[ -z "$CHOSEN" ] && exit 0
+
+if [[ "$CHOSEN" == "⏏"* ]]; then
+    iwctl station "$IFACE" disconnect
+    exit 0
+fi
+
+# Check if network is already known to iwd
+KNOWN=$(sudo ls /var/lib/iwd/ 2>/dev/null | sed 's/\..*//')
+if echo "$KNOWN" | grep -qxF "$CHOSEN"; then
+    iwctl station "$IFACE" connect "$CHOSEN"
+else
+    PASS=$(rofi -dmenu \
+        -p "🔒 Mot de passe pour \"$CHOSEN\"" \
+        -password \
+        -theme-str 'window {width: 380px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}')
+    [ -z "$PASS" ] && exit 0
+    iwctl --passphrase "$PASS" station "$IFACE" connect "$CHOSEN"
+fi
