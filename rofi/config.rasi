@@ -1,5 +1,6 @@
-
-@theme "catppuccin-default"
+/* Apparence : fournie par le thème actif.
+ * Bascule : `theme-switch <nom>` — voir ~/.config/themes/. */
+@theme "~/.config/themes/current/rofi.rasi"
 
 configuration {
     show-icons: true;
@@ -11,4 +12,3 @@ configuration {
     display-combi: "󰕘 combi:";
     display-filebrowser: "󰉋 filebrowser:";
 }
-

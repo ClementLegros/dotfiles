@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# theme-switch — bascule l'ensemble de l'environnement sur un thème.
+#
+# Principe : chaque config (hyprland, kitty, waybar, rofi, nvim) inclut en
+# permanence un fichier situé sous  ~/.config/themes/current/ , qui est un
+# symlink vers le thème actif. Changer de thème = repointer le symlink, puis
+# demander à chaque programme de relire sa config.
+#
+#   theme-switch              → thème actif + liste des thèmes disponibles
+#   theme-switch <nom>        → bascule sur <nom> et recharge tout
+#   theme-switch -n <nom>     → bascule sans recharger (--no-reload)
+
+set -euo pipefail
+
+THEMES_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/themes"
+CURRENT="$THEMES_DIR/current"
+
+RELOAD=1
+[[ ${1:-} == -n || ${1:-} == --no-reload ]] && { RELOAD=0; shift; }
+
+list_themes() {
+    find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d \
+        ! -name bin ! -name '.*' -printf '%f\n' | sort
+}
+
+# Pas d'argument : afficher l'état et sortir.
+if [[ $# -eq 0 ]]; then
+    active=$([[ -L $CURRENT ]] && basename "$(readlink -f "$CURRENT")" || echo "(aucun)")
+    echo "Thème actif : $active"
+    echo "Disponibles :"
+    list_themes | sed "s/^/  /"
+    exit 0
+fi
+
+THEME="$1"
+TARGET="$THEMES_DIR/$THEME"
+
+if [[ ! -d $TARGET ]]; then
+    echo "theme-switch: thème inconnu : '$THEME'" >&2
+    echo "Disponibles : $(list_themes | paste -sd' ')" >&2
+    exit 1
+fi
+
+# Bascule atomique du symlink (-n : ne pas suivre le lien existant, sinon on
+# créerait  current/<nom>  au lieu de remplacer  current ).
+# Cible relative : le lien reste valide si ~/.config est cloné ailleurs.
+ln -sfn "$THEME" "$CURRENT"
+echo "→ thème : $THEME"
+
+[[ $RELOAD -eq 0 ]] && exit 0
+
+# ── Rechargement à chaud ──────────────────────────────────────────────────
+# Chaque étape est optionnelle : si le programme ne tourne pas, on passe.
+
+if command -v hyprctl >/dev/null && [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
+    hyprctl reload >/dev/null && echo "  ✓ hyprland"
+
+    # hyprpaper met les images en cache : on décharge tout puis on recharge
+    # via le chemin réel (et non le symlink), pour éviter toute collision.
+    wp=$(readlink -f "$CURRENT/wallpaper.jpg" 2>/dev/null || true)
+    if [[ -f ${wp:-} ]]; then
+        hyprctl hyprpaper unload all  >/dev/null 2>&1 || true
+        hyprctl hyprpaper preload "$wp" >/dev/null 2>&1 || true
+        hyprctl hyprpaper wallpaper ",$wp" >/dev/null 2>&1 \
+            && echo "  ✓ fond d'écran"
+    fi
+fi
+
+# waybar relit sa config sur SIGUSR2.
+pkill -SIGUSR2 -x waybar 2>/dev/null && echo "  ✓ waybar" || true
+
+# kitty relit sa config sur SIGUSR1 (toutes les instances ouvertes).
+pkill -SIGUSR1 -x kitty 2>/dev/null && echo "  ✓ kitty" || true
+
+# rofi lit son thème à chaque lancement — rien à faire.
+echo "  ✓ rofi (au prochain lancement)"
+
+# nvim charge le thème au démarrage ; pas de rechargement à chaud fiable.
+pgrep -x nvim >/dev/null 2>&1 \
+    && echo "  ! nvim : redémarrer les instances ouvertes pour appliquer" || true
