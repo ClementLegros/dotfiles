@@ -66,6 +66,18 @@ programme inclut en permanence un fichier sous `themes/current/`, un lien
 symbolique vers le thème actif ; changer de thème revient à repointer ce lien.
 Le détail est dans [`themes/README.md`](themes/README.md).
 
+### Sakura
+
+![Thème Sakura](screenshots/sakura.jpg)
+
+### Catppuccin
+
+![Thème Catppuccin](screenshots/catppuccin.jpg)
+
+### Frutiger Aero
+
+![Thème Frutiger Aero](screenshots/frutiger-aero.jpg)
+
 ## Raccourcis principaux
 
 `Super` est la touche de modification.
@@ -95,3 +107,5 @@ Rien de tout cela n'est de moi :
   de Genshin Impact (© HoYoverse) ;
 - le fond d'écran du thème Sakura est une illustration de Yae Miko dont je ne
   connais pas l'auteur, tirée d'un fond Wallpaper Engine.
+- les fonds d'écran des thèmes Catppuccin et Frutiger Aero sont eux aussi des
+  images récupérées, dont je ne suis pas l'auteur.
