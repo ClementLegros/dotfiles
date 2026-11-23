@@ -2,10 +2,15 @@
 #
 # theme-switch — bascule l'ensemble de l'environnement sur un thème.
 #
-# Principe : chaque config (hyprland, kitty, waybar, rofi, nvim) inclut en
-# permanence un fichier situé sous  ~/.config/themes/current/ , qui est un
-# symlink vers le thème actif. Changer de thème = repointer le symlink, puis
-# demander à chaque programme de relire sa config.
+# Principe : chaque config (hyprland, hyprlock, kitty, waybar, rofi, dunst,
+# nvim) inclut en permanence un fichier situé sous ~/.config/themes/current/,
+# qui est un symlink vers le thème actif. Changer de thème = repointer le
+# symlink, puis demander à chaque programme de relire sa config.
+#
+# Deux exceptions, qui ne savent pas suivre un symlink :
+#   - GTK  : ses réglages vivent dans settings.ini + gsettings. Le thème
+#            déclare ce qu'il veut dans gtk.conf, et on le *dérive* ici.
+#   - dunst: pas d'`include`, mais un dossier de drop-ins dunstrc.d/.
 #
 #   theme-switch              → thème actif + liste des thèmes disponibles
 #   theme-switch <nom>        → bascule sur <nom> et recharge tout
@@ -13,7 +18,8 @@
 
 set -euo pipefail
 
-THEMES_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/themes"
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+THEMES_DIR="$CONFIG/themes"
 CURRENT="$THEMES_DIR/current"
 
 RELOAD=1
@@ -48,6 +54,226 @@ fi
 ln -sfn "$THEME" "$CURRENT"
 echo "→ thème : $THEME"
 
+# ── GTK ───────────────────────────────────────────────────────────────────
+# GTK3 lit settings.ini ; GTK4/libadwaita l'ignore et ne lit que gsettings.
+# Il faut donc écrire les deux, sinon les applis GTK4 gardent Adwaita.
+
+# Un thème/curseur/police déclaré mais absent du disque ne produit aucune
+# erreur visible : GTK retombe silencieusement sur Adwaita et on passe une
+# heure à chercher pourquoi « le thème ne s'applique pas ». D'où ces contrôles.
+gtk_res() {   # gtk_res <sous-dossier> <nom> → 0 si trouvé
+    local kind="$1" name="$2" d
+    # Adwaita / HighContrast / Default sont compilés dans GTK : ils n'ont pas
+    # de dossier sur le disque et passeraient pour introuvables.
+    case "$name" in Adwaita|Adwaita-dark|HighContrast|Default) return 0 ;; esac
+    for d in "$HOME/.$kind" "$HOME/.local/share/$kind" "/usr/share/$kind"; do
+        [[ -d "$d/$name" ]] && return 0
+    done
+    return 1
+}
+
+apply_gtk() {
+    local conf="$CURRENT/gtk.conf"
+    [[ -f $conf ]] || return 0
+
+    local gtk_theme icon_theme cursor_theme cursor_size
+    local font document_font monospace_font color_scheme
+    # shellcheck disable=SC1090
+    while IFS='=' read -r k v; do
+        [[ $k == \#* || -z $k ]] && continue
+        case "$k" in
+            gtk_theme)      gtk_theme=$v ;;
+            icon_theme)     icon_theme=$v ;;
+            cursor_theme)   cursor_theme=$v ;;
+            cursor_size)    cursor_size=$v ;;
+            font)           font=$v ;;
+            document_font)  document_font=$v ;;
+            monospace_font) monospace_font=$v ;;
+            color_scheme)   color_scheme=$v ;;
+        esac
+    done < "$conf"
+
+    gtk_res themes "${gtk_theme:-}" || {
+        echo "  ! thème GTK '${gtk_theme:-}' introuvable → repli Adwaita"
+        gtk_theme=Adwaita
+    }
+    gtk_res icons "${icon_theme:-}" || {
+        echo "  ! thème d'icônes '${icon_theme:-}' introuvable → repli Adwaita"
+        icon_theme=Adwaita
+    }
+    gtk_res icons "${cursor_theme:-}" || {
+        echo "  ! curseur '${cursor_theme:-}' introuvable → repli Adwaita"
+        cursor_theme=Adwaita
+    }
+    # La police se vérifie par famille : "Inter 11" → famille "Inter".
+    if [[ -n ${font:-} ]] && command -v fc-list >/dev/null; then
+        local fam=${font% *}
+        fc-list -q "$fam" || {
+            echo "  ! police '$fam' introuvable → repli Noto Sans"
+            font="Noto Sans ${font##* }"
+            document_font=$font
+        }
+    fi
+
+    local dark=false
+    [[ ${color_scheme:-} == prefer-dark ]] && dark=true
+
+    local ini="[Settings]
+# Fichier GÉNÉRÉ par theme-switch depuis themes/current/gtk.conf — ne pas
+# éditer à la main, la prochaine bascule de thème l'écrasera.
+gtk-theme-name=$gtk_theme
+gtk-icon-theme-name=$icon_theme
+gtk-cursor-theme-name=$cursor_theme
+gtk-cursor-theme-size=${cursor_size:-24}
+gtk-font-name=${font:-Noto Sans 11}
+gtk-application-prefer-dark-theme=$dark
+gtk-enable-animations=true
+gtk-xft-antialias=1
+gtk-xft-hinting=1
+gtk-xft-hintstyle=hintslight
+gtk-xft-rgba=rgb"
+
+    mkdir -p "$CONFIG/gtk-3.0" "$CONFIG/gtk-4.0"
+    printf '%s\n' "$ini" > "$CONFIG/gtk-3.0/settings.ini"
+    # gtk-hint-font-metrics n'existe qu'en GTK4 : le mettre aussi dans le
+    # fichier GTK3 fait râler chaque appli GTK3 au démarrage.
+    printf '%s\ngtk-hint-font-metrics=1\n' "$ini" > "$CONFIG/gtk-4.0/settings.ini"
+
+    # GTK4 ne lit pas gtk-theme-name depuis settings.ini, mais il charge bien
+    # ~/.themes/<nom>/gtk-4.0/gtk.css s'il est symlinké à cet emplacement.
+    rm -f "$CONFIG/gtk-4.0/gtk.css" "$CONFIG/gtk-4.0/assets"
+    local src
+    for src in "$HOME/.themes/$gtk_theme" "/usr/share/themes/$gtk_theme"; do
+        if [[ -f "$src/gtk-4.0/gtk.css" ]]; then
+            ln -sfn "$src/gtk-4.0/gtk.css" "$CONFIG/gtk-4.0/gtk.css"
+            [[ -d "$src/gtk-4.0/assets" ]] &&
+                ln -sfn "$src/gtk-4.0/assets" "$CONFIG/gtk-4.0/assets"
+            break
+        fi
+    done
+
+    if command -v gsettings >/dev/null; then
+        local i=org.gnome.desktop.interface
+        gsettings set $i gtk-theme        "$gtk_theme"      2>/dev/null || true
+        gsettings set $i icon-theme       "$icon_theme"     2>/dev/null || true
+        gsettings set $i cursor-theme     "$cursor_theme"   2>/dev/null || true
+        gsettings set $i cursor-size      "${cursor_size:-24}" 2>/dev/null || true
+        gsettings set $i font-name        "${font:-Noto Sans 11}" 2>/dev/null || true
+        gsettings set $i document-font-name "${document_font:-${font:-Noto Sans 11}}" 2>/dev/null || true
+        gsettings set $i monospace-font-name "${monospace_font:-monospace 11}" 2>/dev/null || true
+        gsettings set $i color-scheme     "${color_scheme:-default}" 2>/dev/null || true
+    fi
+
+    # Les clients Wayland natifs (et XWayland) prennent leur curseur ici, pas
+    # dans gsettings.
+    mkdir -p "$HOME/.icons/default"
+    printf '[Icon Theme]\nName=Default\nComment=Généré par theme-switch\nInherits=%s\n' \
+        "$cursor_theme" > "$HOME/.icons/default/index.theme"
+
+    if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && command -v hyprctl >/dev/null; then
+        hyprctl setcursor "$cursor_theme" "${cursor_size:-24}" >/dev/null 2>&1 || true
+    fi
+
+    echo "  ✓ gtk ($gtk_theme / $icon_theme / $cursor_theme)"
+}
+
+# ── dunst ─────────────────────────────────────────────────────────────────
+# dunst n'a pas d'`include`, mais lit tous les *.conf de dunstrc.d/ après le
+# dunstrc principal. On y pose donc un symlink vers le fichier du thème.
+apply_dunst() {
+    [[ -f "$CURRENT/dunstrc" ]] || return 0
+    mkdir -p "$CONFIG/dunst/dunstrc.d"
+    ln -sfn "../../themes/current/dunstrc" "$CONFIG/dunst/dunstrc.d/50-theme.conf"
+}
+
+# ── starship ──────────────────────────────────────────────────────────────
+# starship ne sait ni inclure un fichier ni suivre une variable de thème : sa
+# config est un unique TOML. On le fabrique donc par concaténation
+# structure + palette.
+#
+# L'ordre compte : en TOML, une clé de premier niveau (`palette = 'theme'`) ne
+# peut pas apparaître après un en-tête de table. La structure doit donc venir
+# en premier et la palette — qui n'est qu'un `[palettes.theme]` — en dernier.
+apply_starship() {
+    local base="$CONFIG/starship/base.toml"
+    local pal="$CURRENT/starship.toml"
+    [[ -f $base && -f $pal ]] || return 0
+
+    local out="$CONFIG/starship.toml"
+    {
+        printf '# ⚠ FICHIER GÉNÉRÉ par theme-switch — ne pas éditer.\n'
+        printf '#   structure : ~/.config/starship/base.toml\n'
+        printf '#   palette   : ~/.config/themes/current/starship.toml\n\n'
+        cat "$base"
+        printf '\n'
+        cat "$pal"
+    } > "$out.tmp" && mv -f "$out.tmp" "$out"
+
+    # starship relit sa config à chaque prompt : le changement est visible au
+    # prochain Entrée, y compris dans les shells déjà ouverts.
+    echo "  ✓ starship"
+}
+
+# ── spicetify (Spotify) ───────────────────────────────────────────────────
+# spicetify ne lit pas de fichier de thème à la volée : il RÉÉCRIT les
+# ressources de Spotify sur disque. On lui change donc sa config, puis on
+# relance `apply`.
+#
+# Deux cas selon le thème :
+#  - il fournit son propre dossier spicetify/  → on le symlinke dans
+#    ~/.config/spicetify/Themes/ sous le nom déclaré ;
+#  - il désigne un thème déjà installé (catppuccin via le marketplace) → on se
+#    contente de le sélectionner.
+apply_spicetify() {
+    local conf="$CURRENT/spicetify.conf"
+    [[ -f $conf ]] || return 0
+    local spice
+    spice=$(command -v spicetify || echo "$HOME/.spicetify/spicetify")
+    [[ -x $spice ]] || return 0
+
+    local theme="" scheme=""
+    while IFS='=' read -r k v; do
+        [[ $k == \#* || -z $k ]] && continue
+        case "$k" in theme) theme=$v ;; color_scheme) scheme=$v ;; esac
+    done < "$conf"
+    [[ -n $theme ]] || return 0
+
+    # Le thème embarqué, s'il existe, est exposé à spicetify par un lien.
+    if [[ -d "$CURRENT/spicetify" ]]; then
+        mkdir -p "$CONFIG/spicetify/Themes"
+        ln -sfn "$(readlink -f "$CURRENT/spicetify")" \
+                "$CONFIG/spicetify/Themes/$theme"
+    fi
+
+    "$spice" config current_theme "$theme" color_scheme "$scheme" >/dev/null 2>&1 || {
+        echo "  ! spicetify : config refusée"; return 0; }
+
+    # `apply` réécrit les fichiers de Spotify. Piège : quand spotify-launcher a
+    # mis Spotify à jour, le backup de spicetify est périmé — `apply` affiche
+    # « Spotify client is in stock state », NE FAIT RIEN, et sort quand même en
+    # code 0. On teste donc la SORTIE et pas le code de retour, puis on enchaîne
+    # sur `backup apply`, qui est la procédure de rattrapage documentée.
+    local out
+    out=$("$spice" apply 2>&1)
+    if grep -qiE 'stock state|backup version' <<<"$out"; then
+        echo "  … spicetify : backup périmé (Spotify mis à jour), reconstruction"
+        out=$("$spice" backup apply 2>&1)
+    fi
+
+    if grep -qi 'stock state' <<<"$out"; then
+        echo "  ! spicetify : Spotify reste en état d'origine — lancer 'spicetify backup apply'"
+    elif pgrep -x spotify >/dev/null 2>&1; then
+        echo "  ✓ spicetify (redémarrer Spotify pour voir le changement)"
+    else
+        echo "  ✓ spicetify"
+    fi
+}
+
+apply_gtk
+apply_dunst
+apply_starship
+apply_spicetify
+
 [[ $RELOAD -eq 0 ]] && exit 0
 
 # ── Rechargement à chaud ──────────────────────────────────────────────────
@@ -56,15 +282,9 @@ echo "→ thème : $THEME"
 if command -v hyprctl >/dev/null && [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
     hyprctl reload >/dev/null && echo "  ✓ hyprland"
 
-    # hyprpaper met les images en cache : on décharge tout puis on recharge
-    # via le chemin réel (et non le symlink), pour éviter toute collision.
-    wp=$(readlink -f "$CURRENT/wallpaper.jpg" 2>/dev/null || true)
-    if [[ -f ${wp:-} ]]; then
-        hyprctl hyprpaper unload all  >/dev/null 2>&1 || true
-        hyprctl hyprpaper preload "$wp" >/dev/null 2>&1 || true
-        hyprctl hyprpaper wallpaper ",$wp" >/dev/null 2>&1 \
-            && echo "  ✓ fond d'écran"
-    fi
+    # Fond d'écran : image fixe (hyprpaper) ou fond animé Wallpaper Engine,
+    # selon ce que déclare le thème — voir wallpaper-apply.
+    "$THEMES_DIR/bin/wallpaper-apply" || true
 fi
 
 # waybar relit sa config sur SIGUSR2.
@@ -73,8 +293,18 @@ pkill -SIGUSR2 -x waybar 2>/dev/null && echo "  ✓ waybar" || true
 # kitty relit sa config sur SIGUSR1 (toutes les instances ouvertes).
 pkill -SIGUSR1 -x kitty 2>/dev/null && echo "  ✓ kitty" || true
 
-# rofi lit son thème à chaque lancement — rien à faire.
-echo "  ✓ rofi (au prochain lancement)"
+# dunst : rechargement propre via son API D-Bus.
+if command -v dunstctl >/dev/null && pgrep -x dunst >/dev/null 2>&1; then
+    dunstctl reload >/dev/null 2>&1 && echo "  ✓ dunst" || true
+fi
+
+# rofi et hyprlock lisent leur thème à chaque lancement — rien à faire.
+echo "  ✓ rofi, hyprlock (au prochain lancement)"
+
+# Firefox lit userChrome.css une seule fois, au démarrage.
+pgrep -x firefox >/dev/null 2>&1 \
+    && echo "  ! firefox : redémarrer pour appliquer" \
+    || echo "  ✓ firefox (au prochain lancement)"
 
 # nvim charge le thème au démarrage ; pas de rechargement à chaud fiable.
 pgrep -x nvim >/dev/null 2>&1 \

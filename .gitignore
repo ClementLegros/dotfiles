@@ -15,10 +15,18 @@
 !/tmux/
 !/fastfetch/
 !/themes/
-!/starship.toml
+!/dunst/
+!/starship/
 
 # ── Deliberately NOT versioned here ──
 # nvim/  — has its own repo (github.com/ClementLegros/nvim), versioned separately
+
+# ── Généré par theme-switch, pas écrit à la main ──
+# (gtk-3.0/ et gtk-4.0/ ne sont de toute façon pas whitelistés ; ce symlink,
+#  lui, est dans un dossier qui l'est.)
+dunst/dunstrc.d/50-theme.conf
+# starship.toml = starship/base.toml + themes/current/starship.toml
+starship.toml
 
 # ── Noise inside the whitelisted dirs ──
 # (leading **/ so these match at any depth, not just the repo root)

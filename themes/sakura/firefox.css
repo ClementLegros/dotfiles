@@ -1,0 +1,155 @@
+/* ─── Firefox — apparence ─── Sakura ──────────────────────────────────────────
+ * Chargé par le userChrome.css du profil via themes/current/firefox.css.
+ * Voir themes/frutiger-aero/firefox.css pour le détail des pièges (variables
+ * du thème d'extension, renommage des suffixes -focus, color-scheme). */
+
+:root {
+  --sk-paper:    #1f1513;
+  --sk-paperdim: #17100e;
+  --sk-ink:      #f5e6e0;
+  --sk-inkdim:   #a8918a;
+  --sk-rose:     #f38f78;
+  --sk-sakura:   #e0604f;
+  --sk-petal:    #5c342c;
+  --sk-blush:    #4a2a25;
+  --sk-red:      #ff6b7a;
+
+  /* Force la branche sombre des light-dark() internes de Firefox, quel que
+   * soit le thème d'extension installé. */
+  color-scheme: dark !important;
+
+  /* Variables du moteur de thèmes — anciens ET nouveaux noms. */
+  --toolbar-bgcolor: var(--sk-paper) !important;
+  --toolbar-color: var(--sk-ink) !important;
+  --toolbar-field-background-color: #2b1d1a !important;
+  --toolbar-field-color: var(--sk-ink) !important;
+  --toolbar-field-border-color: var(--sk-petal) !important;
+  --toolbar-field-focus-background-color: #2b1d1a !important;
+  --toolbar-field-focus-color: var(--sk-ink) !important;
+  --toolbar-field-focus-border-color: var(--sk-sakura) !important;
+  --toolbar-field-background-color-focus: #2b1d1a !important;
+  --toolbar-field-text-color-focus: var(--sk-ink) !important;
+  --toolbar-field-border-color-focus: var(--sk-sakura) !important;
+
+  --urlbar-background-color: #2b1d1a !important;
+  --urlbar-background-color-focus: #2b1d1a !important;
+
+  --lwt-accent-color: var(--sk-paperdim) !important;
+  --lwt-text-color: var(--sk-ink) !important;
+  --lwt-toolbar-field-background-color: #2b1d1a !important;
+  --lwt-toolbar-field-color: var(--sk-ink) !important;
+  --lwt-toolbar-field-focus: #2b1d1a !important;
+
+  --tab-selected-bgcolor: var(--sk-paper) !important;
+  --tab-selected-textcolor: var(--sk-ink) !important;
+
+  --arrowpanel-background: var(--sk-paper) !important;
+  --arrowpanel-color: var(--sk-ink) !important;
+  --arrowpanel-border-color: var(--sk-petal) !important;
+
+  --lwt-sidebar-background-color: var(--sk-paper) !important;
+  --lwt-sidebar-text-color: var(--sk-ink) !important;
+
+  --button-bgcolor: transparent !important;
+  --button-hover-bgcolor: var(--sk-blush) !important;
+
+  /* Panneau de résultats de la barre d'adresse. */
+  --urlbarview-background-color-hover: var(--sk-paperdim) !important;
+  --urlbarview-background-color-selected: var(--sk-blush) !important;
+  --urlbarview-text-color-selected: var(--sk-ink) !important;
+  --urlbarview-text-color-secondary: var(--sk-inkdim) !important;
+  --urlbarview-text-color-action: var(--sk-rose) !important;
+  --urlbarview-separator-color: var(--sk-blush) !important;
+
+  --urlbar-box-background-color: var(--sk-paperdim) !important;
+  --urlbar-box-background-color-hover: var(--sk-blush) !important;
+  --urlbar-box-text-color: var(--sk-ink) !important;
+
+  --autocomplete-popup-background: var(--sk-paper) !important;
+  --autocomplete-popup-color: var(--sk-ink) !important;
+}
+
+/* ── Barres ── */
+#navigator-toolbox,
+#PersonalToolbar,
+#TabsToolbar {
+  background-color: var(--sk-paperdim) !important;
+  border-color: var(--sk-blush) !important;
+  color: var(--sk-ink) !important;
+}
+
+#nav-bar {
+  background-color: var(--sk-paper) !important;
+  color: var(--sk-ink) !important;
+}
+
+/* ── Onglets ── */
+.tabbrowser-tab {
+  color: var(--sk-inkdim) !important;
+}
+
+.tab-background {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.tab-background[selected="true"],
+.tabbrowser-tab[selected] .tab-background {
+  background-color: var(--sk-paper) !important;
+  outline: 1px solid var(--sk-petal) !important;
+}
+
+.tabbrowser-tab[selected] .tab-label {
+  color: var(--sk-ink) !important;
+  font-weight: 600 !important;
+}
+
+.tab-close-button:hover {
+  background-color: var(--sk-blush) !important;
+  fill: var(--sk-red) !important;
+}
+
+/* ── Barre d'adresse ── */
+#urlbar-background,
+#searchbar {
+  background-color: #2b1d1a !important;
+  border: 1px solid var(--sk-petal) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+#urlbar[focused] > #urlbar-background {
+  border-color: var(--sk-sakura) !important;
+}
+
+#urlbar-input {
+  color: var(--sk-ink) !important;
+}
+
+/* ── Boutons ── */
+.toolbarbutton-1 {
+  color: var(--sk-ink) !important;
+  fill: var(--sk-ink) !important;
+}
+
+/* ── Menus ── */
+menupopup,
+panel {
+  --panel-background: var(--sk-paper) !important;
+  --panel-color: var(--sk-ink) !important;
+  --panel-border-color: var(--sk-petal) !important;
+  --panel-border-radius: 8px !important;
+}
+
+menuitem[_moz-menuactive="true"],
+menu[_moz-menuactive="true"] {
+  background-color: var(--sk-blush) !important;
+  color: var(--sk-ink) !important;
+}
+
+/* ── Panneau latéral ── */
+#sidebar-box,
+#sidebar-header {
+  background-color: var(--sk-paper) !important;
+  color: var(--sk-ink) !important;
+}

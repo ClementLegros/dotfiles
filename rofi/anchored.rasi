@@ -1,0 +1,21 @@
+/* Variante ancrée du thème actif : une popup collée sous la waybar, à droite,
+ * comme les anciens menus wifi/bluetooth.
+ *
+ * Fichier séparé plutôt qu'une rafale de -theme-str en ligne de commande :
+ * iwmenu fait de la substitution de gabarits ({hint}, {password_flag:…}) sur la
+ * commande du lanceur, et un -theme-str contient justement des accolades. Les
+ * sortir d'ici évite toute collision. */
+
+@theme "~/.config/themes/current/rofi.rasi"
+
+window {
+    width:    420px;
+    location: northeast;
+    anchor:   northeast;
+    x-offset: -12px;
+    y-offset: 52px;
+}
+
+listview {
+    lines: 8;
+}

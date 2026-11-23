@@ -1,0 +1,31 @@
+# ─── dunst — apparence ─── Frutiger Aero ─────────────────────────────────────
+# Symlinké par theme-switch vers ~/.config/dunst/dunstrc.d/50-theme.conf.
+# Les drop-ins de dunst sont appliqués APRÈS le dunstrc principal, donc ce
+# fichier ne redéfinit que l'apparence — la géométrie et le comportement
+# restent dans ~/.config/dunst/dunstrc.
+
+[global]
+    frame_width = 1
+    frame_color = "#ffffffcc"
+    corner_radius = 14
+    separator_color = frame
+    highlight = "#4fc3f7"
+    font = Inter 11
+
+[urgency_low]
+    background = "#eaf8fde6"
+    foreground = "#06355c"
+    frame_color = "#ffffffcc"
+    timeout = 5
+
+[urgency_normal]
+    background = "#eaf8fdf2"
+    foreground = "#06355c"
+    frame_color = "#ffffffdd"
+    timeout = 8
+
+[urgency_critical]
+    background = "#fff0edf7"
+    foreground = "#7a1e12"
+    frame_color = "#e8442fdd"
+    timeout = 0

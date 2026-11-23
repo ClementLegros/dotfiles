@@ -1,0 +1,181 @@
+# starship — STRUCTURE du prompt (format, modules, symboles).
+#
+# Les COULEURS ne sont pas ici : `palette = 'theme'` en fait pointer les noms
+# seg1…seg6 / segfg / ok / err / alt vers la table [palettes.theme] fournie par
+# le thème actif. theme-switch concatène ce fichier et themes/current/starship.toml
+# pour produire ~/.config/starship.toml — qui est donc GÉNÉRÉ, ne pas l'éditer.
+# Bascule : `theme-switch <nom>` — voir ~/.config/themes/.
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[](seg1)\
+$os\
+$username\
+[](bg:seg2 fg:seg1)\
+$directory\
+[](bg:seg3 fg:seg2)\
+$git_branch\
+$git_status\
+[](fg:seg3 bg:seg4)\
+$c\
+$rust\
+$golang\
+$nodejs\
+$php\
+$java\
+$kotlin\
+$haskell\
+$python\
+[](fg:seg4 bg:seg5)\
+$conda\
+[](fg:seg5 bg:seg6)\
+$time\
+[ ](fg:seg6)\
+$cmd_duration\
+$line_break\
+$character"""
+
+palette = 'theme'
+
+[os]
+disabled = false
+style = "bg:seg1 fg:segfg"
+
+[os.symbols]
+Windows = ""
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+AOSC = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
+
+[username]
+show_always = true
+style_user = "bg:seg1 fg:segfg"
+style_root = "bg:seg1 fg:segfg"
+format = '[ $user]($style)'
+
+[directory]
+style = "bg:seg2 fg:segfg"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = "󰝚 "
+"Pictures" = " "
+"Developer" = "󰲋 "
+
+[git_branch]
+symbol = ""
+style = "bg:seg3"
+format = '[[ $symbol $branch ](fg:segfg bg:seg3)]($style)'
+
+[git_status]
+style = "bg:seg3"
+format = '[[($all_status$ahead_behind )](fg:segfg bg:seg3)]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[c]
+symbol = " "
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[rust]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[php]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[java]
+symbol = " "
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[kotlin]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[haskell]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version) ](fg:segfg bg:seg4)]($style)'
+
+[python]
+symbol = ""
+style = "bg:seg4"
+format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:segfg bg:seg4)]($style)'
+
+[docker_context]
+symbol = ""
+style = "bg:seg5"
+format = '[[ $symbol( $context) ](fg:segfg bg:seg5)]($style)'
+
+[conda]
+symbol = "  "
+style = "fg:segfg bg:seg5"
+format = '[$symbol$environment ]($style)'
+ignore_base = false
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:seg6"
+format = '[[  $time ](fg:segfg bg:seg6)]($style)'
+
+[line_break]
+disabled = true
+
+[character]
+disabled = false
+success_symbol = '[❯](bold fg:ok)'
+error_symbol = '[❯](bold fg:err)'
+vimcmd_symbol = '[❮](bold fg:ok)'
+vimcmd_replace_one_symbol = '[❮](bold fg:alt)'
+vimcmd_replace_symbol = '[❮](bold fg:alt)'
+vimcmd_visual_symbol = '[❮](bold fg:alt)'
+
+[cmd_duration]
+show_milliseconds = true
+# Le format d'origine n'appelait pas ($style) : la couleur déclarée juste en
+# dessous n'était donc jamais appliquée, et le module sortait aux couleurs par
+# défaut du terminal. On enveloppe le format pour que le style compte à nouveau
+# — en fg seul et non en bg : un pavé de couleur après la bulle de fermeture
+# casserait la silhouette du prompt.
+format = "[ in $duration ]($style)"
+style = "fg:seg6"
+disabled = false
+show_notifications = true
+min_time_to_notify = 45000
+

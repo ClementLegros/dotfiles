@@ -13,6 +13,7 @@
 @define-color mauve  #cba6f7;
 @define-color surface0 #313244;
 @define-color surface1 #45475a;
+@define-color teal   #94e2d5;
 
 * {
     border: none;
@@ -69,9 +70,18 @@ window#waybar {
 #cpu,
 #memory,
 #battery,
-#pulseaudio,
+#wireplumber,
 #network,
-#bluetooth {
+#bluetooth,
+#temperature,
+#power-profiles-daemon,
+#idle_inhibitor,
+#privacy,
+#window,
+#tray,
+#custom-lock,
+#custom-power,
+#custom-dnd {
     padding: 0 10px;
     color: @text;
 }
@@ -129,12 +139,75 @@ window#waybar {
 }
 
 /* ── Volume ── */
-#pulseaudio {
+#wireplumber {
     color: @yellow;
 }
 
-#pulseaudio.muted {
+#wireplumber.muted {
     color: @subtext;
+}
+
+/* ── Titre de fenêtre ── */
+#window {
+    color: @subtext;
+    font-weight: normal;
+}
+
+window#waybar.empty #window {
+    background: transparent;
+}
+
+/* ── Température ── */
+#temperature {
+    color: @peach;
+}
+
+#temperature.critical {
+    color: @red;
+}
+
+/* ── Profil d'alimentation ── */
+#power-profiles-daemon {
+    color: @teal;
+}
+
+/* ── Groupe système (tiroir) ──
+ * Conteneur transparent : sinon on empile un second fond au milieu de la
+ * section, visible comme un rectangle plus clair. */
+#system {
+    background: transparent;
+    padding: 0;
+}
+
+.system-child {
+    padding: 0 7px;
+}
+
+/* ── Bascules ── */
+#idle_inhibitor {
+    color: @subtext;
+}
+
+#idle_inhibitor.activated {
+    color: @green;
+}
+
+#custom-dnd.on {
+    color: @red;
+}
+
+/* ── Confidentialité ── */
+#privacy,
+#privacy-item {
+    color: @red;
+}
+
+/* ── Tray ── */
+#tray menu {
+    background: @mantle;
+    color: @text;
+    border: 1px solid @surface0;
+    border-radius: 8px;
 }
 
 /* ── Lock / Power ── */

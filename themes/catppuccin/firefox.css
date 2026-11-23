@@ -1,0 +1,144 @@
+/* ─── Firefox — apparence ─── Catppuccin Mocha ────────────────────────────────
+ * Chargé par le userChrome.css du profil via themes/current/firefox.css. */
+
+:root {
+  --ctp-rosewater: #f5e0dc;
+  --ctp-flamingo:  #f2cdcd;
+  --ctp-pink:      #f5c2e7;
+  --ctp-mauve:     #cba6f7;
+  --ctp-red:       #f38ba8;
+  --ctp-maroon:    #eba0ac;
+  --ctp-peach:     #fab387;
+  --ctp-yellow:    #f9e2af;
+  --ctp-green:     #a6e3a1;
+  --ctp-teal:      #94e2d5;
+  --ctp-sky:       #89dceb;
+  --ctp-sapphire:  #74c7ec;
+  --ctp-blue:      #89b4fa;
+  --ctp-lavender:  #b4befe;
+  --ctp-text:      #cdd6f4;
+  --ctp-subtext1:  #bac2de;
+  --ctp-subtext0:  #a6adc8;
+  --ctp-overlay2:  #9399b2;
+  --ctp-overlay1:  #7f849c;
+  --ctp-overlay0:  #6c7086;
+  --ctp-surface2:  #585b70;
+  --ctp-surface1:  #45475a;
+  --ctp-surface0:  #313244;
+  --ctp-base:      #1e1e2e;
+  --ctp-mantle:    #181825;
+  --ctp-crust:     #11111b;
+}
+
+/* ── Toolbar & Navigation ───────────────────────────────────── */
+#navigator-toolbox,
+#nav-bar,
+#PersonalToolbar,
+#TabsToolbar {
+  background-color: var(--ctp-mantle) !important;
+  border-color: var(--ctp-crust) !important;
+  color: var(--ctp-text) !important;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+.tabbrowser-tab {
+  color: var(--ctp-subtext0) !important;
+}
+
+.tab-background {
+  background-color: transparent !important;
+}
+
+.tab-background[selected="true"] {
+  background-color: var(--ctp-base) !important;
+}
+
+.tab-label[selected],
+.tabbrowser-tab[selected] .tab-label {
+  color: var(--ctp-text) !important;
+  font-weight: 600 !important;
+}
+
+.tab-close-button {
+  fill: var(--ctp-subtext0) !important;
+}
+
+.tab-close-button:hover {
+  background-color: var(--ctp-surface1) !important;
+  fill: var(--ctp-red) !important;
+}
+
+/* Indicateur actif sous l'onglet sélectionné */
+.tab-line[selected="true"] {
+  background-color: var(--ctp-mauve) !important;
+}
+
+/* ── URL Bar ────────────────────────────────────────────────── */
+#urlbar-background {
+  background-color: var(--ctp-surface0) !important;
+  border: 1px solid var(--ctp-surface2) !important;
+  border-radius: 8px !important;
+}
+
+#urlbar[focused] > #urlbar-background {
+  border-color: var(--ctp-mauve) !important;
+  box-shadow: 0 0 0 1px var(--ctp-mauve) !important;
+}
+
+#urlbar-input {
+  color: var(--ctp-text) !important;
+}
+
+/* ── Boutons de la toolbar ──────────────────────────────────── */
+.toolbarbutton-1 {
+  color: var(--ctp-text) !important;
+  fill: var(--ctp-text) !important;
+}
+
+.toolbarbutton-1:hover {
+  background-color: var(--ctp-surface0) !important;
+}
+
+.toolbarbutton-1:active {
+  background-color: var(--ctp-surface1) !important;
+}
+
+/* ── Menu contextuel & menus ────────────────────────────────── */
+menupopup,
+panel {
+  background-color: var(--ctp-base) !important;
+  border: 1px solid var(--ctp-surface1) !important;
+  border-radius: 8px !important;
+  color: var(--ctp-text) !important;
+}
+
+menuitem:hover,
+menuitem[_moz-menuactive="true"] {
+  background-color: var(--ctp-surface0) !important;
+  color: var(--ctp-text) !important;
+}
+
+menuseparator {
+  border-color: var(--ctp-surface1) !important;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+#sidebar-box,
+#sidebar-header {
+  background-color: var(--ctp-mantle) !important;
+  color: var(--ctp-text) !important;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────── */
+scrollbar {
+  background-color: var(--ctp-mantle) !important;
+}
+
+scrollbar thumb {
+  background-color: var(--ctp-surface2) !important;
+  border-radius: 4px !important;
+}
+
+scrollbar thumb:hover {
+  background-color: var(--ctp-overlay0) !important;
+}

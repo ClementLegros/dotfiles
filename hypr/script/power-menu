@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Menu d'extinction — rofi.
+#
+# Remplace l'ancien clic direct sur « éteindre » de la waybar, qui coupait la
+# machine sans confirmation ni possibilité d'annuler.
+#
+# Verrouille avant de suspendre : sinon la session revient déverrouillée au
+# réveil. `hyprlock -q &` puis un court délai laisse au lock le temps de
+# s'afficher avant que systemd ne gèle le compositeur.
+
+set -euo pipefail
+
+declare -a LABELS=(
+    "󰌾  Verrouiller"
+    "󰤄  Mettre en veille"
+    "󰗽  Fermer la session"
+    "󰜉  Redémarrer"
+    "󰐥  Éteindre"
+)
+
+CHOSEN=$(printf '%s\n' "${LABELS[@]}" | rofi -dmenu -format i \
+    -p "󰐥  Session" \
+    -no-show-icons \
+    -theme-str 'window {width: 320px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}' \
+    -theme-str "listview {lines: ${#LABELS[@]};}")
+
+[[ -z ${CHOSEN:-} ]] && exit 0
+
+case "$CHOSEN" in
+    0) hyprlock ;;
+    1) hyprlock -q & sleep 0.4; systemctl suspend ;;
+    2)
+        # Config Lua : `hyprctl dispatch` prend une expression hl.dsp.*.
+        # hyprctl sort en code 0 même sur « Invalid dispatcher » : on teste donc
+        # la sortie. Le repli ne sert qu'à une session encore démarrée sur
+        # l'ancien hyprland.conf (Hyprland < 0.57).
+        out=$(hyprctl dispatch 'hl.dsp.exit()' 2>&1) || true
+        if [[ $out == *Invalid* ]]; then hyprctl dispatch exit; fi
+        ;;
+    3) systemctl reboot ;;
+    4) systemctl poweroff ;;
+esac

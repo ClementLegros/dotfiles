@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=Frutiger Aero
+Description=Verre, bulles et ciel bleu — assorti au thème frutiger-aero (hyprlock, waybar, rofi)
+Author=optimusprime
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Screenshot=preview.png
+Theme-Id=frutiger-aero
+Theme-API=2.0
+QtVersion=6

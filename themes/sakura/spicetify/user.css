@@ -1,0 +1,15 @@
+/* ─── spicetify — feuille de style ─── Sakura ────────────────────────────────
+ * Volontairement presque vide : le thème est minimaliste, color.ini fait
+ * l'essentiel. Mêmes règles que frutiger-aero pour les sélecteurs : seulement
+ * [data-encore-id] / [data-testid], jamais les classes hachées. */
+
+:root {
+  --border-radius-1: 8px;
+  --border-radius-2: 10px;
+}
+
+/* Le bouton lecture : rose plein, icône claire. */
+[data-testid="control-button-playpause"] {
+  background-color: var(--spice-button) !important;
+  color: var(--spice-main) !important;
+}

@@ -1,0 +1,28 @@
+# ─── dunst — apparence ─── Catppuccin Mocha ──────────────────────────────────
+# Symlinké par theme-switch vers ~/.config/dunst/dunstrc.d/50-theme.conf.
+
+[global]
+    frame_width = 2
+    frame_color = "#b4befe"
+    corner_radius = 10
+    separator_color = frame
+    highlight = "#89b4fa"
+    font = Noto Sans 11
+
+[urgency_low]
+    background = "#1e1e2ee6"
+    foreground = "#a6adc8"
+    frame_color = "#45475a"
+    timeout = 5
+
+[urgency_normal]
+    background = "#1e1e2ef2"
+    foreground = "#cdd6f4"
+    frame_color = "#b4befe"
+    timeout = 8
+
+[urgency_critical]
+    background = "#1e1e2ef2"
+    foreground = "#f38ba8"
+    frame_color = "#f38ba8"
+    timeout = 0

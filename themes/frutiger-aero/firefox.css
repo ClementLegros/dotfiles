@@ -1,0 +1,420 @@
+/* ─── Firefox — apparence ─── Frutiger Aero ──────────────────────────────────
+ * Chargé par le userChrome.css du profil via themes/current/firefox.css.
+ *
+ * Même recette de verre que la waybar : dégradé vertical à CASSURE nette vers
+ * 46 %, liseré blanc en arête haute, ombre bleutée. Ce qui change ici, c'est
+ * qu'il n'y a pas de flou de compositeur derrière — Firefox est une fenêtre,
+ * pas un layer. Les surfaces sont donc quasi opaques, et c'est le dégradé seul
+ * qui porte l'effet.
+ *
+ * Tout est en !important : Firefox applique le thème actif (une extension)
+ * après cette feuille, et sans ça la moitié des règles serait écrasée.
+ */
+
+:root {
+  --aero-ink:      #06355c;
+  --aero-inkdim:   #3d7ba6;
+  --aero-ocean:    #0b4c8c;
+  --aero-azure:    #1e88e5;
+  --aero-sky:      #4fc3f7;
+  --aero-aqua:     #7fe3f0;
+  --aero-foam:     #d6f2fb;
+  --aero-mist:     #eaf8fd;
+  --aero-coral:    #e8442f;
+
+  --aero-glass: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(233, 249, 255, 0.94) 45%,
+      rgba(178, 221, 246, 0.94) 46%,
+      rgba(216, 243, 253, 0.97) 100%);
+
+  --aero-edge: inset 0 1px 0 rgba(255, 255, 255, 1),
+               inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+
+  /* ── Variables du moteur de thèmes (« lightweight themes ») ──
+   * Le thème actif de Firefox est une EXTENSION : elle ne pose pas de règles
+   * CSS que l'on pourrait battre à coups de !important, elle redéfinit ces
+   * variables-ci, que le chrome de Firefox consomme ensuite partout. Sans les
+   * réécrire, la barre d'adresse et les panneaux restent aux couleurs de
+   * l'extension — c'est exactement ce qui laissait le champ d'URL sombre au
+   * milieu d'une barre claire. */
+  --toolbar-bgcolor: rgba(255, 255, 255, 0.4) !important;
+  --toolbar-color: var(--aero-ink) !important;
+  --toolbar-field-background-color: #ffffff !important;
+  --toolbar-field-color: var(--aero-ink) !important;
+  --toolbar-field-border-color: rgba(120, 170, 205, 0.7) !important;
+  --toolbar-field-focus-background-color: #ffffff !important;
+  --toolbar-field-focus-color: var(--aero-ink) !important;
+  --toolbar-field-focus-border-color: var(--aero-azure) !important;
+
+  /* ── Les MÊMES variables sous leur nom actuel ──
+   * Firefox a déplacé le suffixe : `--toolbar-field-FOCUS-background-color`
+   * est devenu `--toolbar-field-background-color-FOCUS`. Les trois lignes
+   * ci-dessus ne pilotent donc plus rien depuis ce renommage, et le champ
+   * d'URL au focus retombait sur la valeur du thème d'extension —
+   * Catppuccin Mocha déclare toolbar_field: rgb(69,71,90), que
+   * LightweightThemeConsumer.sys.mjs injecte précisément sous le nouveau nom.
+   * Les anciennes sont gardées pour les versions antérieures : une variable
+   * inconnue ne coûte rien. */
+  --toolbar-field-background-color-focus: #ffffff !important;
+  --toolbar-field-text-color-focus: var(--aero-ink) !important;
+  --toolbar-field-border-color-focus: var(--aero-azure) !important;
+
+  /* Et les variables réellement CONSOMMÉES par .urlbar-background, une couche
+   * plus bas. Les fixer ici rend le résultat indépendant du nom que porte la
+   * variable de thème en amont. */
+  --urlbar-background-color: #ffffff !important;
+  --urlbar-background-color-focus: #ffffff !important;
+
+  --lwt-accent-color: var(--aero-foam) !important;
+  --lwt-text-color: var(--aero-ink) !important;
+  --lwt-toolbar-field-background-color: #ffffff !important;
+  --lwt-toolbar-field-color: var(--aero-ink) !important;
+  --lwt-toolbar-field-focus: #ffffff !important;
+
+  --tab-selected-bgcolor: rgba(255, 255, 255, 0.98) !important;
+  --tab-selected-textcolor: var(--aero-ocean) !important;
+
+  --arrowpanel-background: var(--aero-mist) !important;
+  --arrowpanel-color: var(--aero-ink) !important;
+  --arrowpanel-border-color: rgba(255, 255, 255, 0.9) !important;
+
+  --lwt-sidebar-background-color: var(--aero-foam) !important;
+  --lwt-sidebar-text-color: var(--aero-ink) !important;
+
+  --button-bgcolor: rgba(255, 255, 255, 0.65) !important;
+  --button-hover-bgcolor: rgba(255, 255, 255, 0.9) !important;
+
+  /* ── La ligne qui compte le plus de tout ce fichier ──
+   * Firefox déduit un schéma de couleurs du thème d'extension actif et le pose
+   * sur le document chrome. Avec un thème sombre installé (Catppuccin Mocha
+   * ici), il vaut « dark » — browser.theme.toolbar-theme passe à 0 — et TOUTES
+   * les fonctions light-dark() du CSS interne de Firefox choisissent alors leur
+   * branche sombre, y compris dans le panneau de résultats de la barre
+   * d'adresse. Les couleurs système (SelectedItem, SelectedItemText) basculent
+   * avec elles.
+   *
+   * Résultat : cette feuille peint clair, Firefox peint sombre par-dessous, et
+   * le texte est calculé pour le mauvais fond. Forcer le schéma ici réaligne
+   * les deux d'un coup, quel que soit le thème d'extension installé. */
+  color-scheme: light !important;
+
+  /* ── Jetons du panneau de résultats (Firefox 154) ──
+   * Ces variables-ci ne sont PAS redéfinies quand un thème d'extension est
+   * actif : la couche tokens-browser-theme de Firefox est gardée par
+   * `:root:is([theme-in-app], :not([lwtheme]))`, donc avec un thème installé
+   * elles retombent sur la couche fondation, qui utilise des couleurs système.
+   * D'où une ligne sélectionnée aux couleurs de GTK au milieu du verre. */
+  --urlbarview-background-color-hover: rgba(255, 255, 255, 0.75) !important;
+  --urlbarview-background-color-selected: var(--aero-azure) !important;
+  --urlbarview-text-color-selected: #ffffff !important;
+  --urlbarview-text-color-secondary: var(--aero-inkdim) !important;
+  --urlbarview-text-color-action: var(--aero-ocean) !important;
+  --urlbarview-separator-color: rgba(30, 136, 229, 0.25) !important;
+
+  /* Les pastilles internes du champ (mode recherche, « Rechercher avec… ») */
+  --urlbar-box-background-color: rgba(255, 255, 255, 0.85) !important;
+  --urlbar-box-background-color-hover: rgba(255, 255, 255, 1) !important;
+  --urlbar-box-text-color: var(--aero-ink) !important;
+
+  --autocomplete-popup-background: var(--aero-mist) !important;
+  --autocomplete-popup-color: var(--aero-ink) !important;
+}
+
+/* Le champ d'URL lui-même, pas seulement son fond : l'extension de thème peint
+ * parfois directement sur #urlbar. */
+#urlbar,
+#urlbar[open],
+#searchbar {
+  --toolbar-field-background-color: #ffffff !important;
+  --toolbar-field-focus-background-color: #ffffff !important;
+  background-color: transparent !important;
+  color: var(--aero-ink) !important;
+}
+
+/* ── Barre supérieure ──
+ * On peint UNE fois sur #navigator-toolbox et on rend transparent tout ce qui
+ * est dedans : sinon chaque sous-barre repeint son propre fond et on empile
+ * trois dégradés au lieu d'une seule plaque de verre continue. */
+#navigator-toolbox {
+  background-image: var(--aero-glass) !important;
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(30, 136, 229, 0.35) !important;
+  box-shadow: var(--aero-edge), 0 1px 4px rgba(4, 30, 51, 0.18) !important;
+  color: var(--aero-ink) !important;
+}
+
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#toolbar-menubar {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--aero-ink) !important;
+}
+
+/* ── Onglets : des pastilles de verre ── */
+.tabbrowser-tab {
+  color: var(--aero-inkdim) !important;
+}
+
+.tab-background {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px 10px 4px 4px !important;
+  margin: 2px 1px !important;
+}
+
+.tab-background[selected="true"] {
+  background-image: linear-gradient(to bottom,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(240, 251, 255, 0.98) 46%,
+      rgba(198, 235, 252, 0.98) 47%,
+      rgba(232, 248, 254, 1) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1),
+              0 1px 3px rgba(4, 30, 51, 0.25) !important;
+}
+
+.tabbrowser-tab:not([selected]) .tab-background:hover {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+}
+
+.tab-label[selected],
+.tabbrowser-tab[selected] .tab-label {
+  color: var(--aero-ocean) !important;
+  font-weight: 600 !important;
+}
+
+/* Le liseré d'onglet actif : la seule touche d'aqua saturé de la barre. */
+.tab-line[selected="true"] {
+  background: linear-gradient(to right,
+      var(--aero-sky), var(--aero-aqua)) !important;
+  height: 2px !important;
+}
+
+.tab-close-button { fill: var(--aero-inkdim) !important; }
+.tab-close-button:hover {
+  background-color: rgba(232, 68, 47, 0.15) !important;
+  fill: var(--aero-coral) !important;
+  border-radius: 4px !important;
+}
+
+/* ── Barre d'adresse : un champ ENFONCÉ dans le verre ──
+ * Le dégradé est inversé (sombre en haut) et l'ombre interne est en haut :
+ * c'est ce qui distingue un creux d'une bosse. Les boutons, eux, gardent le
+ * dégradé clair-en-haut et ressortent. */
+/* CLASSE, pas identifiant. UrlbarInput.mjs construit ce fragment en JS :
+ *     <html:div class="urlbar-background"/>
+ *     <html:input class="urlbar-input textbox-input" …>
+ * Ni l'un ni l'autre ne porte d'id — #urlbar-background et #urlbar-input ne
+ * désignaient donc plus rien, et tout ce bloc était sans effet. #urlbar,
+ * #searchbar et #nav-bar, eux, ont gardé leur id dans browser.xhtml. */
+.urlbar-background,
+#searchbar {
+  /* La couleur AVANT le dégradé : celui-ci est semi-transparent en haut
+   * (0.85), donc sans fond opaque en dessous, la couleur du thème
+   * d'extension remontait au travers et grisait l'arête supérieure. */
+  background-color: #ffffff !important;
+  background-image: linear-gradient(to bottom,
+      rgba(198, 226, 242, 0.85) 0%,
+      rgba(255, 255, 255, 0.95) 55%,
+      rgba(255, 255, 255, 1) 100%) !important;
+  border: 1px solid rgba(120, 170, 205, 0.7) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px 3px rgba(11, 76, 140, 0.22) !important;
+}
+
+/* L'attribut est posé par toggleAttribute("focused", …), donc sa valeur est
+ * VIDE : [focused="true"] ne correspondait jamais. */
+#urlbar[focused] > .urlbar-background,
+#urlbar[open] > .urlbar-background {
+  background-color: #ffffff !important;
+  border-color: var(--aero-azure) !important;
+  box-shadow: inset 0 1px 3px rgba(11, 76, 140, 0.18),
+              0 0 0 2px rgba(79, 195, 247, 0.45) !important;
+}
+
+.urlbar-input,
+.urlbar-input::placeholder,
+.urlbar-input-box,
+.searchbar-textbox { color: var(--aero-ink) !important; }
+
+/* La sélection dans le champ, sinon laissée aux couleurs système. */
+.urlbar-input::selection,
+.searchbar-textbox::selection {
+  background-color: var(--aero-sky) !important;
+  color: var(--aero-ink) !important;
+}
+
+#identity-box, #tracking-protection-icon-container {
+  color: var(--aero-ocean) !important;
+}
+
+/* ── Boutons de barre d'outils ── */
+.toolbarbutton-1 {
+  color: var(--aero-ink) !important;
+  fill: var(--aero-ocean) !important;
+}
+
+.toolbarbutton-1:hover > .toolbarbutton-icon,
+.toolbarbutton-1:hover > .toolbarbutton-badge-stack {
+  background-image: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(200, 235, 252, 0.85) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+.toolbarbutton-1:active > .toolbarbutton-icon {
+  background-image: linear-gradient(to bottom,
+      rgba(150, 205, 240, 0.9) 0%,
+      rgba(220, 244, 254, 0.9) 100%) !important;
+  box-shadow: inset 0 2px 3px rgba(11, 76, 140, 0.3) !important;
+}
+
+/* ── Menus et panneaux ── */
+menupopup, panel, .panel-arrowcontent {
+  background-image: linear-gradient(to bottom,
+      rgba(250, 254, 255, 0.99) 0%,
+      rgba(224, 245, 253, 0.99) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--aero-edge), 0 4px 14px rgba(4, 30, 51, 0.28) !important;
+  color: var(--aero-ink) !important;
+}
+
+menuitem, menu { color: var(--aero-ink) !important; }
+
+menuitem:hover, menu:hover,
+menuitem[_moz-menuactive="true"], menu[_moz-menuactive="true"] {
+  background-image: linear-gradient(to bottom,
+      var(--aero-sky) 0%, var(--aero-azure) 100%) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+menuseparator { border-color: rgba(30, 136, 229, 0.25) !important; }
+
+/* ── Barre latérale ── */
+#sidebar-box, #sidebar-header {
+  background-image: linear-gradient(to bottom,
+      rgba(245, 252, 255, 0.98) 0%,
+      rgba(214, 242, 251, 0.98) 100%) !important;
+  color: var(--aero-ink) !important;
+  border-right: 1px solid rgba(30, 136, 229, 0.2) !important;
+}
+
+/* ── Barres de défilement ── */
+scrollbar { background-color: rgba(214, 242, 251, 0.6) !important; }
+scrollbar thumb {
+  background-image: linear-gradient(to right,
+      rgba(255, 255, 255, 0.9) 0%,
+      var(--aero-sky) 50%,
+      var(--aero-azure) 100%) !important;
+  border-radius: 6px !important;
+}
+scrollbar thumb:hover {
+  background-image: linear-gradient(to right,
+      rgba(255, 255, 255, 0.95) 0%,
+      var(--aero-aqua) 50%,
+      var(--aero-sky) 100%) !important;
+}
+
+/* ── Panneau de résultats de la barre d'adresse ──
+ * Le panneau vit DANS #urlbar une fois ouvert : son fond est celui de
+ * #urlbar-background, déjà peint plus haut. Ce qui manquait, c'était les
+ * lignes — laissées aux couleurs système faute de jetons redéfinis (voir
+ * :root). Les conteneurs sont donc rendus transparents pour laisser passer le
+ * verre, et seules les lignes portent une couleur. */
+.urlbarView,
+.urlbarView-body-outer,
+.urlbarView-body-inner,
+.urlbarView-results {
+  background-color: transparent !important;
+  color: var(--aero-ink) !important;
+}
+
+.urlbarView-row {
+  color: var(--aero-ink) !important;
+}
+
+.urlbarView-row:hover {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-radius: 8px !important;
+}
+
+/* La ligne sélectionnée reprend le dégradé des menus, pour que la sélection
+ * ait la même signature partout dans l'interface. */
+.urlbarView-row[selected],
+.urlbarView-row[selected]:hover {
+  background-image: linear-gradient(to bottom,
+      var(--aero-sky) 0%, var(--aero-azure) 100%) !important;
+  background-color: transparent !important;
+  border-radius: 8px !important;
+}
+
+/* Chaque morceau de texte porte sa propre couleur dans le CSS de Firefox :
+ * hériter ne suffit pas, il faut les nommer un à un. */
+.urlbarView-row[selected] .urlbarView-title,
+.urlbarView-row[selected] .urlbarView-url,
+.urlbarView-row[selected] .urlbarView-title-separator,
+.urlbarView-row[selected] .urlbarView-action,
+.urlbarView-row[selected] .urlbarView-row-body-description {
+  color: #ffffff !important;
+}
+
+.urlbarView-title { color: var(--aero-ink) !important; }
+.urlbarView-url { color: var(--aero-ocean) !important; }
+.urlbarView-title-separator,
+.urlbarView-action,
+.urlbarView-row-body-description { color: var(--aero-inkdim) !important; }
+
+/* Le texte déjà saisi est mis en gras par Firefox, pas recoloré : on garde
+ * le contraste sur la ligne sélectionnée. */
+.urlbarView-row[selected] strong { color: #ffffff !important; }
+
+/* Les moteurs de recherche proposés sous la liste. */
+#urlbar .search-one-offs,
+.search-panel-one-offs-container {
+  background-color: transparent !important;
+  color: var(--aero-ink) !important;
+  border-top: 1px solid rgba(30, 136, 229, 0.25) !important;
+}
+
+.searchbar-engine-one-off-item {
+  color: var(--aero-ink) !important;
+  fill: var(--aero-ocean) !important;
+}
+
+.searchbar-engine-one-off-item:hover {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 6px !important;
+}
+
+/* ── Panneau de la barre de recherche séparée (si elle est affichée) ── */
+#PopupSearchAutoComplete {
+  background-image: linear-gradient(to bottom,
+      rgba(250, 254, 255, 0.99) 0%,
+      rgba(224, 245, 253, 0.99) 100%) !important;
+  color: var(--aero-ink) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 12px !important;
+}
+
+#PopupSearchAutoComplete .autocomplete-richlistitem[selected] {
+  background-image: linear-gradient(to bottom,
+      var(--aero-sky) 0%, var(--aero-azure) 100%) !important;
+  color: #ffffff !important;
+}
+
+/* ── Barre de recherche des trouvailles (Ctrl+F) ── */
+findbar {
+  background-image: var(--aero-glass) !important;
+  color: var(--aero-ink) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+}

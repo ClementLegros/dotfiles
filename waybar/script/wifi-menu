@@ -1,46 +1,55 @@
-#!/bin/bash
-IFACE="wlan0"
+#!/usr/bin/env bash
+#
+# Menu Wi-Fi de la waybar — enveloppe iwmenu.
+#
+# Remplace l'ancien script qui parsait la sortie texte d'iwctl. Celui-ci avait
+# trois défauts structurels : l'interface « wlan0 » codée en dur, un
+# `sudo ls /var/lib/iwd` pour deviner les réseaux connus (donc une invite de mot
+# de passe root au milieu d'un menu), et la phrase de passe passée en ARGUMENT
+# de commande — donc visible dans la table des processus le temps de la
+# connexion.
+#
+# iwmenu parle directement à l'API D-Bus d'iwd : pas de parsing, pas de sudo,
+# pas de secret en ligne de commande, et il découvre l'interface tout seul.
 
-iwctl station "$IFACE" scan 2>/dev/null
+set -euo pipefail
 
-CURRENT=$(iwctl station "$IFACE" show 2>/dev/null \
-    | awk '/Connected network/{print $3}')
+DEFAULT_PROMPT='󰤨  Wi-Fi'
+THEME="$HOME/.config/rofi/anchored.rasi"
 
-NETWORKS=$(iwctl station "$IFACE" get-networks 2>/dev/null \
-    | tail -n +5 \
-    | awk 'NF>0 {
-        gsub(/^[[:space:]>]+/, "")
-        gsub(/\033\[[0-9;]*m/, "")
-        if ($1 !~ /^-+$/) print $1
-    }')
-
-if [ -n "$CURRENT" ]; then
-    MENU="⏏  Déconnecter de $CURRENT\n$NETWORKS"
-else
-    MENU="$NETWORKS"
+# ── Mode lanceur ──────────────────────────────────────────────────────────
+# Le script se rappelle lui-même : iwmenu l'invoque à la place de rofi.
+#
+# Raison d'être : iwmenu substitue {hint} par une chaîne vide sur le menu
+# principal (il ne réserve ce champ qu'à la demande de mot de passe). Sans
+# guillemets autour du placeholder, le token disparaît carrément et `-p` avale
+# l'option suivante — le prompt affichait alors « -theme ». Avec guillemets on
+# obtient bien `-p ''`, mais un prompt vide. Ce mode remet un libellé par
+# défaut quand iwmenu n'a rien à dire, et laisse passer son texte sinon.
+if [[ ${1:-} == --launcher ]]; then
+    shift
+    args=()
+    while (($#)); do
+        if [[ $1 == -p && ${2-} == "" && $# -ge 2 ]]; then
+            args+=(-p "$DEFAULT_PROMPT")
+            shift 2
+        else
+            args+=("$1")
+            shift
+        fi
+    done
+    exec rofi "${args[@]}"
 fi
 
-CHOSEN=$(printf '%b' "$MENU" | rofi -dmenu \
-    -p "󰤨  WiFi" \
-    -theme-str 'window {width: 350px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}' \
-    -theme-str 'listview {lines: 8;}')
-
-[ -z "$CHOSEN" ] && exit 0
-
-if [[ "$CHOSEN" == "⏏"* ]]; then
-    iwctl station "$IFACE" disconnect
-    exit 0
+# ── Mode normal ───────────────────────────────────────────────────────────
+if ! command -v iwmenu >/dev/null; then
+    notify-send -u critical "Wi-Fi" \
+        "iwmenu n'est pas installé.\nInstaller avec : yay -S iwmenu-bin" 2>/dev/null
+    exit 1
 fi
 
-# Check if network is already known to iwd
-KNOWN=$(sudo ls /var/lib/iwd/ 2>/dev/null | sed 's/\..*//')
-if echo "$KNOWN" | grep -qxF "$CHOSEN"; then
-    iwctl station "$IFACE" connect "$CHOSEN"
-else
-    PASS=$(rofi -dmenu \
-        -p "🔒 Mot de passe pour \"$CHOSEN\"" \
-        -password \
-        -theme-str 'window {width: 380px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}')
-    [ -z "$PASS" ] && exit 0
-    iwctl --passphrase "$PASS" station "$IFACE" connect "$CHOSEN"
-fi
+# -l custom plutôt que -l rofi : le mode intégré lance rofi avec ses réglages
+# par défaut, donc une fenêtre centrée sans le thème du moment. Ici on garde la
+# popup ancrée sous la barre et le thème actif.
+exec iwmenu -l custom --launcher-command \
+    "'$0' --launcher -dmenu -i -p '{hint}' -theme '$THEME' {password_flag:-password}"

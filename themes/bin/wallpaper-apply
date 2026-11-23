@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+#
+# wallpaper-apply — affiche le fond d'écran du thème actif.
+#
+# Deux moteurs, choisis par le thème :
+#
+#   - hyprpaper (défaut) : l'image fixe themes/current/wallpaper.jpg ;
+#   - linux-wallpaperengine : un fond animé Wallpaper Engine, si le thème
+#     fournit un wallpaper-engine.conf avec `bg=` renseigné ET que le binaire
+#     est installé.
+#
+# Le fond animé est strictement optionnel : binaire absent, conf absente, ou
+# moteur qui meurt au démarrage (fond incompatible, assets introuvables) → on
+# retombe sur l'image fixe. On ne se retrouve jamais sans fond d'écran.
+#
+# Appelé par theme-switch à chaque bascule, et par hyprland.lua au démarrage
+# de la session. `wallpaper.jpg` reste obligatoire dans tous les cas : c'est
+# aussi le fond de hyprlock, qui ne sait afficher qu'une image.
+
+set -uo pipefail
+
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+CURRENT="$CONFIG/themes/current"
+LOG="${XDG_CACHE_HOME:-$HOME/.cache}/wallpaper-engine.log"
+
+# Le nom de processus est tronqué à 15 caractères par le noyau :
+# « linux-wallpaperengine » devient « linux-wallpaper ». pkill -x compare à ce
+# nom tronqué — avec le nom complet il ne trouverait jamais rien.
+WE_COMM=linux-wallpaper
+
+monitors() {
+    hyprctl monitors -j 2>/dev/null |
+        python3 -c 'import json,sys; [print(m["name"]) for m in json.load(sys.stdin)]' 2>/dev/null
+}
+
+# ── Image fixe (hyprpaper) ────────────────────────────────────────────────
+apply_static() {
+    pkill -x "$WE_COMM" 2>/dev/null || true
+
+    # hyprpaper.conf pointe sur themes/current : une instance fraîchement
+    # lancée affiche d'elle-même le bon fond.
+    if ! pgrep -x hyprpaper >/dev/null 2>&1; then
+        setsid -f hyprpaper >/dev/null 2>&1
+        echo "  ✓ fond d'écran (hyprpaper lancé)"
+        return 0
+    fi
+
+    # On passe par le chemin RÉEL (readlink -f) et non par le symlink : sinon
+    # hyprpaper garde en cache l'image sous le nom du symlink et ne recharge
+    # rien quand la cible change.
+    local wp mon
+    wp=$(readlink -f "$CURRENT/wallpaper.jpg" 2>/dev/null || true)
+    [[ -f ${wp:-} ]] || { echo "  ! fond d'écran : wallpaper.jpg absent du thème"; return 0; }
+
+    # Deux pièges de l'IPC hyprpaper 0.8 :
+    #  - `preload` / `unload` / `listloaded` ont disparu (les images sont
+    #    chargées à la demande) et répondent « invalid hyprpaper request » ;
+    #  - la forme moniteur vide, `wallpaper ,<chemin>`, répond OK mais ne
+    #    fait RIEN. Il faut nommer chaque moniteur explicitement.
+    while read -r mon; do
+        [[ -z $mon ]] && continue
+        hyprctl hyprpaper wallpaper "$mon,$wp" >/dev/null 2>&1 || true
+    done < <(monitors)
+
+    sleep 0.3
+    # Vérification : si plusieurs instances de hyprpaper tournent, celle qui
+    # répond à l'IPC n'est pas forcément celle qui dessine. On repart alors
+    # d'une instance propre.
+    if hyprctl hyprpaper listactive 2>/dev/null | grep -qF "$wp"; then
+        echo "  ✓ fond d'écran"
+    else
+        pkill -x hyprpaper 2>/dev/null || true
+        sleep 0.3
+        setsid -f hyprpaper >/dev/null 2>&1
+        echo "  ✓ fond d'écran (hyprpaper redémarré)"
+    fi
+}
+
+# ── Fond animé (linux-wallpaperengine) ────────────────────────────────────
+# Renvoie 0 si le moteur tourne, 1 s'il faut retomber sur l'image fixe.
+apply_engine() {
+    local conf="$CURRENT/wallpaper-engine.conf"
+    [[ -f $conf ]] || return 1
+
+    local bg="" fps=24 scaling=fill assets_dir="" k v
+    while IFS='=' read -r k v; do
+        [[ $k == \#* || -z $k ]] && continue
+        case "$k" in
+            bg)         bg=$v ;;
+            fps)        fps=$v ;;
+            scaling)    scaling=$v ;;
+            assets_dir) assets_dir=$v ;;
+        esac
+    done < "$conf"
+    [[ -n $bg ]] || return 1
+    bg=${bg/#\~/$HOME}
+    assets_dir=${assets_dir/#\~/$HOME}
+
+    if ! command -v linux-wallpaperengine >/dev/null; then
+        echo "  ! fond animé demandé mais linux-wallpaperengine n'est pas installé → image fixe"
+        return 1
+    fi
+
+    # --silent : un fond d'écran ne doit pas jouer de son.
+    # --fps    : sur un GPU intégré, c'est le réglage qui décide de l'autonomie.
+    # --layer background : par défaut le moteur se pose sur le calque « bottom »,
+    # le même que waybar, et recouvre la barre. « background » est le calque
+    # qu'utilise hyprpaper.
+    local args=(--silent --fps "$fps" --layer background)
+    [[ -n $assets_dir ]] && args+=(--assets-dir "$assets_dir")
+
+    local mon n=0
+    while read -r mon; do
+        [[ -z $mon ]] && continue
+        # --scaling s'applique au --screen-root qui SUIT : il doit le précéder.
+        args+=(--scaling "$scaling" --screen-root "$mon" --bg "$bg")
+        n=$((n + 1))
+    done < <(monitors)
+    [[ $n -gt 0 ]] || return 1
+
+    pkill -x "$WE_COMM" 2>/dev/null || true
+    mkdir -p "$(dirname "$LOG")"
+    setsid -f linux-wallpaperengine "${args[@]}" >"$LOG" 2>&1
+
+    # Un fond incompatible ou des assets introuvables font sortir le moteur
+    # dans la seconde. On attend donc avant de couper hyprpaper.
+    sleep 2
+    if ! pgrep -x "$WE_COMM" >/dev/null 2>&1; then
+        echo "  ! linux-wallpaperengine s'est arrêté au démarrage (voir $LOG) → image fixe"
+        return 1
+    fi
+
+    # Les deux dessinent sur le même calque « background » : hyprpaper doit
+    # s'effacer, sinon l'un recouvre l'autre selon l'ordre de création.
+    pkill -x hyprpaper 2>/dev/null || true
+    echo "  ✓ fond d'écran animé (Wallpaper Engine : $bg, $fps i/s)"
+}
+
+apply_engine || apply_static

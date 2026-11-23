@@ -1,0 +1,164 @@
+/* ─── waybar — apparence ─── Sakura ──────────────────────────────────────────
+ * Importé par ~/.config/waybar/style.css via themes/current/waybar.css.
+ *
+ * Sombre et translucide : trois plaques brun-noir à 65 % d'opacité, floutées par
+ * Hyprland (`hl.layer_rule` dans le hypr.lua du thème), un filet rouge érable d'1px,
+ * aucun dégradé, aucune ombre de texte. La couleur est réservée à l'état — espace
+ * de travail actif, alerte — et jamais à la décoration.
+ */
+
+@define-color paper    #1f1513;
+@define-color paperdim #2b1d1a;
+@define-color ink      #f5e6e0;   /* texte : blanc rosé */
+@define-color inkdim   #a8918a;
+@define-color rose     #f38f78;
+@define-color sakura   #e0604f;
+@define-color petal    #7d4439;   /* filet */
+@define-color blush    #4a2a25;
+@define-color leaf     #9fc79a;
+@define-color honey    #e0b872;
+@define-color red      #ff6b7a;
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "Inter", "Noto Sans", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @ink;
+}
+
+/* ── Les trois plaques ── */
+.modules-left,
+.modules-center,
+.modules-right {
+    background: alpha(@paper, 0.65);
+    border: 1px solid @petal;
+    border-radius: 10px;
+    padding: 0 6px;
+}
+
+#clock, #cpu, #memory, #battery, #wireplumber, #network, #bluetooth,
+#temperature, #power-profiles-daemon, #idle_inhibitor, #privacy,
+#window, #tray, #custom-lock, #custom-power, #custom-dnd {
+    padding: 0 10px;
+    color: @ink;
+}
+
+/* ── Workspaces ── */
+#workspaces {
+    padding: 0 2px;
+}
+
+#workspaces button {
+    color: @inkdim;
+    padding: 0 8px;
+    margin: 4px 2px;
+    background: transparent;
+    border-radius: 6px;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+#workspaces button.active {
+    color: @rose;
+    background: @blush;
+    font-weight: 700;
+}
+
+#workspaces button.urgent {
+    color: @paper;
+    background: @red;
+}
+
+#workspaces button:hover {
+    color: @ink;
+    background: @paperdim;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+/* ── Titre de la fenêtre active ── */
+#window {
+    color: @inkdim;
+    font-weight: 400;
+    padding: 0 12px;
+}
+
+window#waybar.empty #window {
+    background: transparent;
+}
+
+/* ── Horloge : le seul module accentué au repos ── */
+#clock {
+    color: @rose;
+    font-weight: 600;
+    padding: 0 16px;
+}
+
+/* ── États ──
+ * Au repos tous les modules sont à l'encre ; seuls les états sortent du rang. */
+#temperature.critical,
+#battery.critical,
+#bluetooth.off,
+#bluetooth.disabled,
+#wireplumber.muted { color: @red; }
+
+#network.disconnected { color: @inkdim; }
+
+#battery.warning { color: @honey; }
+#battery.charging, #battery.plugged { color: @leaf; }
+
+/* ── Groupe système (drawer) ──
+ * `#system` est le conteneur : il ne doit pas se peindre lui-même. */
+#system {
+    background: transparent;
+    padding: 0;
+}
+
+/* ── Bascules ── */
+#idle_inhibitor            { color: @inkdim; }
+#idle_inhibitor.activated  { color: @rose; }
+#custom-dnd.on             { color: @red; }
+#privacy                   { color: @red; }
+
+/* ── Actions ── */
+#custom-lock  { color: @inkdim; }
+#custom-lock:hover  { color: @rose; }
+#custom-power { color: @inkdim; }
+#custom-power:hover { color: @red; }
+
+#tray menu {
+    background: alpha(@paper, 0.96);
+    color: @ink;
+    border: 1px solid @petal;
+    border-radius: 8px;
+}
+
+/* ── Infobulles ── */
+tooltip {
+    background: alpha(@paper, 0.96);
+    border: 1px solid @petal;
+    border-radius: 8px;
+    color: @ink;
+}
+
+tooltip label {
+    color: @ink;
+    padding: 4px;
+}
+
+/* ── Enfants du tiroir système ── */
+.system-child {
+    padding: 0 7px;
+}
+
+/* ── Voyant de confidentialité ── */
+#privacy-item {
+    padding: 0 4px;
+    color: @red;
+}

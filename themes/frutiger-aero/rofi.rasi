@@ -1,0 +1,187 @@
+/* ─── rofi — apparence ─── Frutiger Aero ─────────────────────────────────────
+ * Chargé par ~/.config/rofi/config.rasi via themes/current/rofi.rasi.
+ * Fichier autonome : la palette est inlinée, pour qu'un thème reste un seul
+ * fichier déplaçable.
+ *
+ * rofi ne sait pas faire de dégradé : le rendu « verre » vient d'un fond
+ * translucide clair + le flou appliqué par Hyprland sur le layer rofi
+ * (`hl.layer_rule`, dans le hypr.lua du thème). Les valeurs alpha
+ * ci-dessous sont donc calibrées POUR ce flou — les monter rend la fenêtre
+ * laiteuse, les baisser laisse le fond d'écran traverser et illisible.
+ */
+
+* {
+  /* ── Palette ── */
+  deep:      #041e33ff;
+  ink:       #06355cff;
+  ocean:     #0b4c8cff;
+  azure:     #1e88e5ff;
+  sky:       #4fc3f7ff;
+  aqua:      #7fe3f0ff;
+  foam:      #d6f2fbff;
+  mist:      #eaf8fdff;
+  lime:      #7cc93aff;
+  coral:     #e8442fff;
+
+  glass:     #eaf8fdd8;   /* la plaque principale */
+  glassdim:  #ffffff5c;   /* champ de saisie, enfoncé dans la plaque */
+  edge:      #ffffffcc;   /* arête éclairée */
+
+  /* ── Rôles couleurs ── */
+  background:                  @glass;
+  foreground:                  @ink;
+  separatorcolor:              #ffffff80;
+  border-color:                @edge;
+  background-color:            transparent;
+
+  normal-background:           transparent;
+  normal-foreground:           @ink;
+  alternate-normal-background: transparent;
+  alternate-normal-foreground: @ink;
+  selected-normal-background:  @azure;
+  selected-normal-foreground:  #ffffffff;
+
+  active-background:           transparent;
+  active-foreground:           @ocean;
+  alternate-active-background: transparent;
+  alternate-active-foreground: @ocean;
+  selected-active-background:  @ocean;
+  selected-active-foreground:  #ffffffff;
+
+  urgent-background:           transparent;
+  urgent-foreground:           @coral;
+  alternate-urgent-background: transparent;
+  alternate-urgent-foreground: @coral;
+  selected-urgent-background:  @coral;
+  selected-urgent-foreground:  #ffffffff;
+
+  spacing: 2;
+  font: "Inter 12";
+}
+
+window {
+    background-color: @glass;
+    border:           1px;
+    border-color:     @edge;
+    border-radius:    16px;
+    padding:          24px;
+    width:            640px;
+}
+
+mainbox {
+    padding: 0;
+    border:  0;
+    spacing: 14px;
+}
+
+inputbar {
+    padding:          12px 16px;
+    spacing:          10px;
+    text-color:       @ink;
+    background-color: @glassdim;
+    border:           1px;
+    border-color:     #ffffffb0;
+    border-radius:    12px;
+    children:         [ "prompt", "entry" ];
+}
+
+prompt {
+    spacing:    0;
+    text-color: @ocean;
+}
+
+entry {
+    text-color:        @ink;
+    cursor:            text;
+    spacing:           0;
+    placeholder-color: #3d7ba6cc;
+    placeholder:       "Rechercher...";
+}
+
+listview {
+    padding:      0;
+    scrollbar:    false;
+    spacing:      4px;
+    fixed-height: 0;
+    border:       0;
+    lines:        8;
+}
+
+element {
+    padding:       10px 14px;
+    cursor:        pointer;
+    spacing:       12px;
+    border:        0;
+    border-radius: 12px;
+}
+
+element normal.normal    { background-color: @normal-background;           text-color: @normal-foreground; }
+element normal.urgent    { background-color: @urgent-background;           text-color: @urgent-foreground; }
+element normal.active    { background-color: @active-background;           text-color: @active-foreground; }
+element selected.normal  { background-color: @selected-normal-background;  text-color: @selected-normal-foreground; }
+element selected.urgent  { background-color: @selected-urgent-background;  text-color: @selected-urgent-foreground; }
+element selected.active  { background-color: @selected-active-background;  text-color: @selected-active-foreground; }
+element alternate.normal { background-color: @alternate-normal-background; text-color: @alternate-normal-foreground; }
+element alternate.urgent { background-color: @alternate-urgent-background; text-color: @alternate-urgent-foreground; }
+element alternate.active { background-color: @alternate-active-background; text-color: @alternate-active-foreground; }
+
+element-text {
+    background-color: transparent;
+    cursor:           inherit;
+    highlight:        inherit;
+    text-color:       inherit;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             1.7em;
+    cursor:           inherit;
+    text-color:       inherit;
+}
+
+message {
+    padding:          10px 14px;
+    border:           1px;
+    border-color:     #ffffffb0;
+    background-color: @glassdim;
+    border-radius:    12px;
+}
+
+textbox {
+    text-color: @ink;
+}
+
+scrollbar {
+    width:        4px;
+    padding:      0;
+    handle-width: 8px;
+    border:       0;
+    handle-color: #3d7ba6aa;
+}
+
+sidebar {
+    border:       0;
+    border-color: @separatorcolor;
+}
+
+button {
+    cursor:     pointer;
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+button selected {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+    border-radius:    10px;
+}
+
+num-filtered-rows  { expand: false; text-color: #3d7ba6cc; }
+num-rows           { expand: false; text-color: #3d7ba6cc; }
+textbox-num-sep    { expand: false; str: "/"; text-color: #3d7ba6cc; }
+case-indicator     { spacing: 0; text-color: @normal-foreground; }
+textbox-prompt-colon {
+    margin: 0px 0.3000em 0.0000em 0.0000em;
+    expand: false;
+    str:    ":";
+    text-color: inherit;
+}

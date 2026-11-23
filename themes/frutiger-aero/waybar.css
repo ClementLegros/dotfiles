@@ -1,0 +1,217 @@
+/* ─── waybar — apparence ─── Frutiger Aero ───────────────────────────────────
+ * Importé par ~/.config/waybar/style.css via themes/current/waybar.css.
+ *
+ * Recette du verre Aero, en trois couches superposées :
+ *   1. un dégradé vertical avec une CASSURE nette vers 46 % — c'est cette
+ *      arête, et pas le flou, qui fait lire la surface comme du verre bombé ;
+ *   2. un liseré blanc interne en haut (`inset 0 1px`) = la lumière qui
+ *      accroche l'arête supérieure ;
+ *   3. une ombre portée bleutée, jamais noire.
+ * Le flou derrière la barre n'est pas fait ici mais par Hyprland
+ * (`hl.layer_rule` dans le hypr.lua du thème).
+ */
+
+@define-color deep    #041e33;
+@define-color ink     #06355c;   /* texte : bleu profond, pas noir */
+@define-color inkdim  #3d7ba6;
+@define-color ocean   #0b4c8c;
+@define-color azure   #1e88e5;
+@define-color sky     #4fc3f7;
+@define-color aqua    #7fe3f0;
+@define-color foam    #d6f2fb;
+@define-color lime    #7cc93a;
+@define-color sun     #f0a500;
+@define-color coral   #e8442f;
+
+* {
+    border: none;
+    border-radius: 0;
+    /* Inter tient lieu de Segoe UI / Frutiger ; le Nerd Font ne sert qu'aux
+     * glyphes d'icônes, que Pango va y chercher par repli automatique. */
+    font-family: "Inter", "Noto Sans", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @ink;
+}
+
+/* ── Les trois plaques de verre ── */
+.modules-left,
+.modules-center,
+.modules-right {
+    /* Les alphas sont hauts (0.72–0.90) volontairement. Un premier essai à
+     * 0.44–0.74 rendait la plaque quasi invisible sur le fond d'écran marine,
+     * et le texte bleu profond illisible. Le verre Aero est CLAIR : il ne
+     * laisse pas passer la couleur du fond, il la diffuse en blanc. Le flou
+     * d'Hyprland derrière suffit à conserver la sensation de transparence. */
+    background-image: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.90) 0%,
+        rgba(233, 249, 255, 0.82) 45%,
+        rgba(171, 219, 246, 0.76) 46%,
+        rgba(214, 242, 252, 0.84) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 18px;
+    padding: 0 6px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1.0),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+        0 2px 10px rgba(4, 30, 51, 0.38);
+}
+
+/* Le texte porte son propre reflet : une ombre blanche d'1px vers le bas.
+ * C'est le détail qui fait « gravé dans le verre » plutôt que « posé dessus ». */
+#clock, #cpu, #memory, #battery, #wireplumber, #network, #bluetooth,
+#temperature, #power-profiles-daemon, #idle_inhibitor, #privacy,
+#window, #tray, #custom-lock, #custom-power, #custom-dnd {
+    padding: 0 10px;
+    color: @ink;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ── Workspaces : des billes de verre ── */
+#workspaces {
+    padding: 0 2px;
+}
+
+#workspaces button {
+    color: #5f93b5;
+    padding: 0 8px;
+    margin: 4px 2px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 13px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#workspaces button.active {
+    color: #ffffff;
+    /* Bille bleue lustrée : clair en haut, saturé en bas, cassure au milieu. */
+    background-image: linear-gradient(to bottom,
+        #7fd3f7 0%,
+        #35a8e8 46%,
+        #1273c4 47%,
+        #4bb4ef 100%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 1px 3px rgba(4, 30, 51, 0.35);
+    text-shadow: 0 1px 1px rgba(4, 30, 51, 0.55);
+}
+
+#workspaces button.urgent {
+    color: #ffffff;
+    background-image: linear-gradient(to bottom, #ff9a6b 0%, #e8442f 47%, #ff7a5c 100%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+#workspaces button:hover {
+    color: @ocean;
+    background-image: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(190, 232, 252, 0.55) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* ── Titre de la fenêtre active ── */
+#window {
+    color: @ocean;
+    font-weight: 500;
+    /* Sans marge le titre colle au bord de la plaque quand il est long. */
+    padding: 0 12px;
+}
+
+window#waybar.empty #window {
+    background: transparent;
+    box-shadow: none;
+}
+
+/* ── Horloge : l'élément mis en avant ── */
+#clock {
+    color: @ocean;
+    font-weight: 700;
+    padding: 0 16px;
+}
+
+/* ── Accents par module ── */
+#cpu        { color: @ocean; }
+#memory     { color: #1565c0; }
+#temperature{ color: @inkdim; }
+#network    { color: #0f7f4f; }
+#bluetooth  { color: @azure; }
+#wireplumber{ color: #0d6ea8; }
+#battery    { color: #2e7d32; }
+
+#temperature.critical,
+#battery.critical,
+#network.disconnected,
+#bluetooth.off,
+#bluetooth.disabled,
+#wireplumber.muted { color: @coral; }
+
+#battery.warning { color: @sun; }
+#battery.charging, #battery.plugged { color: @lime; }
+#network.disconnected { color: @inkdim; }
+
+/* ── Groupe système (drawer) ──
+ * `#system` est le conteneur : il ne doit pas se peindre lui-même, sinon on
+ * empile une deuxième plaque de verre au milieu de la première. */
+#system {
+    background: transparent;
+    padding: 0;
+}
+
+/* ── Bascules ── */
+#idle_inhibitor            { color: @inkdim; }
+#idle_inhibitor.activated  { color: #0f7f4f; }
+#custom-dnd.on             { color: @coral; }
+#privacy                   { color: @coral; }
+
+/* ── Actions ── */
+#custom-lock  { color: @inkdim; }
+#custom-lock:hover  { color: @azure; }
+#custom-power { color: @inkdim; }
+#custom-power:hover { color: @coral; }
+
+#tray menu {
+    background: @foam;
+    color: @ink;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+}
+
+/* ── Infobulles ── */
+tooltip {
+    background-image: linear-gradient(to bottom,
+        rgba(248, 253, 255, 0.97) 0%,
+        rgba(214, 242, 251, 0.97) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    color: @ink;
+    text-shadow: none;
+}
+
+tooltip label {
+    color: @ink;
+    padding: 4px;
+}
+
+/* ── Enfants du tiroir système ──
+ * Ils héritent déjà de la couleur par module ; on ne règle ici que
+ * l'espacement, plus serré, pour que le tiroir déplié ne pousse pas la moitié
+ * de la barre vers la gauche. */
+.system-child {
+    padding: 0 7px;
+}
+
+/* ── Voyant de confidentialité ── */
+#privacy-item {
+    padding: 0 4px;
+    color: @coral;
+}

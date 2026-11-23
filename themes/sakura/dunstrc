@@ -1,0 +1,31 @@
+# ─── dunst — apparence ─── Sakura ────────────────────────────────────────────
+# Symlinké par theme-switch vers ~/.config/dunst/dunstrc.d/50-theme.conf.
+# Les drop-ins de dunst sont appliqués APRÈS le dunstrc principal, donc ce
+# fichier ne redéfinit que l'apparence — la géométrie et le comportement
+# restent dans ~/.config/dunst/dunstrc.
+
+[global]
+    frame_width = 1
+    frame_color = "#7d4439"
+    corner_radius = 8
+    separator_color = frame
+    highlight = "#e0604f"
+    font = Inter 11
+
+[urgency_low]
+    background = "#1f1513d0"
+    foreground = "#a8918a"
+    frame_color = "#4a2a25"
+    timeout = 5
+
+[urgency_normal]
+    background = "#1f1513d9"
+    foreground = "#f5e6e0"
+    frame_color = "#7d4439"
+    timeout = 8
+
+[urgency_critical]
+    background = "#1f1513f0"
+    foreground = "#f5e6e0"
+    frame_color = "#ff6b7a"
+    timeout = 0

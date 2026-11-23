@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# tui — ouvre (ou referme) une appli terminal dans une fenêtre flottante sous
+# la waybar. Sert de « popup » aux modules Wi-Fi, Bluetooth et son.
+#
+#   tui <appli> [commande de repli…]
+#
+# - appli déjà ouverte  → on la ferme (le clic sur le module fait bascule) ;
+# - appli installée     → kitty flottant, classe `tui-float` (règle de fenêtre
+#                         dans hyprland.lua : taille et position) ;
+# - appli absente       → commande de repli, pour que le clic reste utile.
+
+app=${1:?usage: tui <appli> [repli…]}
+shift
+
+pkill -x "$app" && exit 0
+
+if command -v "$app" >/dev/null; then
+    exec kitty --class tui-float --title "$app" -e "$app"
+fi
+
+(($#)) && exec "$@"
+notify-send "Waybar" "$app n'est pas installé (sudo pacman -S $app)"
