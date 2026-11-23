@@ -1,0 +1,36 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+alias ll='ls -l --color=auto'
+
+PS1='[\u@\h \W]\$ '
+
+# fastfetch avec une image tirée au hasard dans ~/.config/fastfetch/yae-miko/.
+# L'image fait 340 px de large et le texte ~56 colonnes : en dessous de 90
+# colonnes les deux se chevauchent, donc on affiche le texte seul.
+fastfetch() {
+    local imgs=(~/.config/fastfetch/yae-miko/*.png)
+    if (( $(tput cols) < 90 )); then
+        command fastfetch --logo none "$@"
+    elif [[ -e ${imgs[0]} ]]; then
+        command fastfetch --logo "${imgs[RANDOM % ${#imgs[@]}]}" "$@"
+    else
+        command fastfetch "$@"
+    fi
+}
+# À l'ouverture d'un terminal : rien du tout si la fenêtre est trop étroite
+# même pour le texte (les cadres se replieraient sur plusieurs lignes).
+(( $(tput cols) >= 60 )) && fastfetch
+
+export PATH=$PATH:/home/optimusprime/.spicetify
+
+eval "$(starship init bash)"
+eval "$(zoxide init bash)"
+export PATH="$HOME/.local/bin:$PATH"

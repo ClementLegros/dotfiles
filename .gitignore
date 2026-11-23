@@ -17,6 +17,7 @@
 !/themes/
 !/dunst/
 !/starship/
+!/bash/
 
 # ── Deliberately NOT versioned here ──
 # nvim/  — has its own repo (github.com/ClementLegros/nvim), versioned separately
