@@ -53,6 +53,10 @@ Rien n'est installé automatiquement. La config s'appuie sur :
   power-profiles-daemon
 - **Shell** : starship, zoxide, fastfetch, tmux
 - **Polices** : Inter, JetBrainsMono Nerd Font
+- **Curseur** : Bibata-Modern-Ice, pour le thème Frutiger Aero (paquet AUR
+  `bibata-cursor-theme-bin`, ou l'archive du projet
+  [Bibata_Cursor](https://github.com/ful1e5/Bibata_Cursor/releases) extraite
+  dans `~/.local/share/icons/`). Sans lui, le thème retombe sur Adwaita.
 
 ## Thèmes
 
