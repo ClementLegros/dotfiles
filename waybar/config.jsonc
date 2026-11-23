@@ -97,8 +97,7 @@
   },
 
   // Le clic ouvre bluetui (fenêtre flottante, voir script/tui) : il parle à
-  // BlueZ par D-Bus et gère lui-même l'appairage. blueman-manager ne sert plus
-  // que de repli si bluetui est désinstallé.
+  // BlueZ par D-Bus et gère lui-même l'appairage.
   "bluetooth": {
     "format": "󰂲",
     "format-on": "󰂯",
@@ -106,7 +105,7 @@
     "tooltip-format": "Bluetooth : {status}\nClic : gestionnaire · clic droit : allumer/éteindre",
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "  {device_alias}",
-    "on-click": "~/.config/waybar/script/tui bluetui blueman-manager",
+    "on-click": "~/.config/waybar/script/tui bluetui",
     "on-click-right": "rfkill toggle bluetooth"
   },
 

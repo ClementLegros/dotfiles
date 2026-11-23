@@ -260,15 +260,6 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name  = "float-blueman",
-    match = { class = [[^(\.?blueman-manager(-real)?|blueman-adapters)$]] },
-
-    float  = true,
-    size   = "900 620",
-    center = true,
-})
-
-hl.window_rule({
     -- Popups de la waybar (Wi-Fi, Bluetooth, son) : des applis terminal lancées
     -- par waybar/script/tui, posées sous la barre, à droite.
     name  = "float-tui",
