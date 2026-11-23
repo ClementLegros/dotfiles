@@ -7,6 +7,7 @@
 /*
 !/.gitignore
 !/install.sh
+!/README.md
 
 # ── Hand-written config ──
 !/hypr/

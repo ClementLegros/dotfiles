@@ -11,6 +11,7 @@ set -euo pipefail
 # Lien dans $HOME → cible, relative à $HOME. Une ligne par fichier.
 LINKS=(
     ".bashrc:.config/bash/bashrc"
+    ".local/bin/theme-switch:.config/themes/bin/theme-switch"
 )
 
 for entry in "${LINKS[@]}"; do
@@ -22,7 +23,7 @@ for entry in "${LINKS[@]}"; do
         continue
     fi
 
-    if [[ -L $link && $(readlink "$link") == "$target" ]]; then
+    if [[ -L $link && $(readlink -f "$link") == "$(readlink -f "$HOME/$target")" ]]; then
         echo "  ✓ ${link/#$HOME/\~} (déjà en place)"
         continue
     fi
@@ -33,6 +34,7 @@ for entry in "${LINKS[@]}"; do
         echo "  → ancien ${link/#$HOME/\~} sauvegardé : ${backup/#$HOME/\~}"
     fi
 
-    ln -s "$target" "$link"
+    mkdir -p "$(dirname "$link")"
+    ln -s "$HOME/$target" "$link"
     echo "  ✓ ${link/#$HOME/\~} → $target"
 done
