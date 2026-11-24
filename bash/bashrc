@@ -33,4 +33,10 @@ export PATH=$PATH:/home/optimusprime/.spicetify
 
 eval "$(starship init bash)"
 eval "$(zoxide init bash)"
+
+# Couleurs de ls / ll selon le thème actif. Rejoué à chaque prompt (après
+# starship, qui doit lire $? en premier) : une bascule de thème est donc prise
+# en compte au prochain Entrée dans les shells déjà ouverts.
+source ~/.config/bash/ls-colors.bash
+PROMPT_COMMAND+=(_ls_theme)
 export PATH="$HOME/.local/bin:$PATH"

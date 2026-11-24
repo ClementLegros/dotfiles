@@ -30,6 +30,7 @@ themes/
 │   ├── dunstrc          couleurs/police des notifications (drop-in)
 │   ├── gtk.conf         thème GTK, icônes, curseur, polices
 │   ├── starship.toml    la table [palettes.theme] du prompt, rien d'autre
+│   ├── ls.conf          couleurs de `ls` / `ll` : un rôle par ligne
 │   ├── firefox.css      userChrome (barre d'onglets, URL, menus)
 │   ├── spicetify.conf   quel thème Spotify sélectionner
 │   ├── spicetify/       le thème Spotify lui-même (color.ini + user.css)
@@ -67,6 +68,7 @@ directement, rien à générer :
 | GTK 3 / 4 | `gtk.conf` est *dérivé* en `gtk-3.0/settings.ini` et `gtk-4.0/settings.ini` (fichiers **générés**, ne pas éditer) |
 | GTK 4 / libadwaita | ignore `settings.ini` pour le thème : `gtk-4.0/gtk.css` est symlinké vers celui du thème, et les clés sont aussi poussées dans `gsettings` |
 | starship | pas d'`include` non plus : `starship.toml` est **généré** par concaténation de `starship/base.toml` (structure) et de la palette du thème |
+| `ls` / `ll` | `LS_COLORS` est une variable d'environnement, propre à chaque shell : `bash/ls-colors.bash` la fabrique depuis `ls.conf`, et la refait au prompt suivant quand le symlink `current` a changé de cible |
 | Firefox | le `chrome/userChrome.css` du profil est un simple `@import` vers `themes/current/firefox.css` — donc rien à faire à la bascule, mais Firefox ne relit cette feuille qu'au démarrage |
 | Spotify | spicetify ne lit pas un thème à la volée, il **réécrit les fichiers de Spotify** : theme-switch symlinke `themes/current/spicetify/` dans `~/.config/spicetify/Themes/`, pousse la config, puis lance `apply` |
 | fond d'écran | `bin/wallpaper-apply` : hyprpaper par défaut, `linux-wallpaperengine` si le thème le demande — voir « Fond d'écran animé » |
@@ -82,7 +84,7 @@ cherche longtemps pourquoi « le thème ne s'applique pas ».
 
 ```bash
 cp -r ~/.config/themes/catppuccin ~/.config/themes/mon-theme
-# éditer les 9 fichiers, remplacer wallpaper.jpg
+# éditer les fichiers, remplacer wallpaper.jpg
 theme-switch mon-theme
 ```
 
@@ -155,6 +157,24 @@ dix rôles :
 L'ordre de concaténation n'est pas arbitraire : en TOML une clé de premier
 niveau (`palette = 'theme'`) ne peut pas suivre un en-tête de table. La
 structure doit donc venir en premier, la palette en dernier.
+
+### Les couleurs de `ls`
+
+`ls.conf` associe une couleur `#rrggbb` à dix rôles ; la correspondance rôle →
+types de fichiers et extensions vit dans `bash/ls-colors.bash`, une seule fois
+pour tous les thèmes.
+
+| Rôle | Quoi |
+|---|---|
+| `dir` / `link` / `exec` | dossiers (gras), liens symboliques, exécutables (gras) |
+| `archive` / `image` / `media` / `doc` | par extension |
+| `special` | tubes, sockets, périphériques |
+| `broken` | liens cassés, setuid / setgid |
+| `muted` | sauvegardes, journaux, fichiers temporaires |
+
+Un rôle omis laisse `ls` sur sa couleur par défaut pour ce type. Les couleurs
+sont en truecolor, pas en indices ANSI : elles ne dépendent donc pas de la
+palette de kitty (catppuccin n'en définit pas).
 
 ### Firefox
 
@@ -234,6 +254,8 @@ sur le flou d'Hyprland (`decoration.blur` et les `layer_rule` de son `hypr.lua`)
   relancer.
 - **starship** relit sa config à chaque prompt : le changement est visible dès
   le prochain Entrée, y compris dans les shells déjà ouverts.
+- **ls** suit le même rythme : `LS_COLORS` est recalculée au prochain Entrée.
+  Ce qui est déjà affiché à l'écran garde ses anciennes couleurs.
 - **Firefox** doit être redémarré : il lit `userChrome.css` une seule fois.
 - `userChrome.css` ne touche que le *chrome* (barre d'onglets, menus). La zone
   de contenu — page « Nouvel onglet », `about:preferences` — suit le thème
