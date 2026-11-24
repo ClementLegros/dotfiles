@@ -66,7 +66,7 @@ window#waybar {
  * C'est le détail qui fait « gravé dans le verre » plutôt que « posé dessus ». */
 #clock, #cpu, #memory, #battery, #wireplumber, #network, #bluetooth,
 #temperature, #power-profiles-daemon, #idle_inhibitor, #privacy,
-#window, #tray, #custom-lock, #custom-power, #custom-dnd {
+#window, #tray, #custom-lock, #custom-power, #custom-dnd, #custom-theme {
     padding: 0 10px;
     color: @ink;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -174,6 +174,8 @@ window#waybar.empty #window {
 #privacy                   { color: @coral; }
 
 /* ── Actions ── */
+#custom-theme { color: @inkdim; }
+#custom-theme:hover { color: @azure; }
 #custom-lock  { color: @inkdim; }
 #custom-lock:hover  { color: @azure; }
 #custom-power { color: @inkdim; }

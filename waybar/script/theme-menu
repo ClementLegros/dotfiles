@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+#
+# theme-menu — module « thème » de la waybar.
+#
+#   theme-menu status   → JSON pour waybar (icône + infobulle : thème actif)
+#   theme-menu          → menu rofi des thèmes, puis theme-switch
+#
+# Un menu plutôt qu'un clic qui passe au thème suivant : une bascule recharge
+# tout l'environnement (et redémarre Spotify), un clic accidentel coûterait cher.
+
+set -euo pipefail
+
+THEMES="${XDG_CONFIG_HOME:-$HOME/.config}/themes"
+current=$(basename "$(readlink -f "$THEMES/current")")
+
+if [[ ${1:-} == status ]]; then
+    printf '{"text":"󰏘","tooltip":"Thème : %s\\nClic : changer de thème"}\n' "$current"
+    exit 0
+fi
+
+# Un thème = un dossier qui fournit un waybar.css.
+names=()
+for d in "$THEMES"/*/; do
+    n=$(basename "$d")
+    [[ $n != current && -f $d/waybar.css ]] && names+=("$n")
+done
+
+row=0 labels=()
+for i in "${!names[@]}"; do
+    if [[ ${names[i]} == "$current" ]]; then
+        labels+=("󰄬  ${names[i]}"); row=$i
+    else
+        labels+=("    ${names[i]}")
+    fi
+done
+
+chosen=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -format i \
+    -p "󰏘  Thème" \
+    -no-show-icons \
+    -selected-row "$row" \
+    -theme-str 'window {width: 320px; location: northeast; anchor: northeast; x-offset: -12px; y-offset: 52px;}' \
+    -theme-str "listview {lines: ${#labels[@]};}") || exit 0
+
+[[ -z $chosen || ${names[chosen]} == "$current" ]] && exit 0
+
+# setsid : theme-switch recharge waybar en cours de route ; détaché, il ne
+# risque pas d'être emporté avec le processus qui l'a lancé.
+setsid -f "$THEMES/bin/theme-switch" "${names[chosen]}" >/dev/null 2>&1

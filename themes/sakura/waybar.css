@@ -45,7 +45,7 @@ window#waybar {
 
 #clock, #cpu, #memory, #battery, #wireplumber, #network, #bluetooth,
 #temperature, #power-profiles-daemon, #idle_inhibitor, #privacy,
-#window, #tray, #custom-lock, #custom-power, #custom-dnd {
+#window, #tray, #custom-lock, #custom-power, #custom-dnd, #custom-theme {
     padding: 0 10px;
     color: @ink;
 }
@@ -127,6 +127,8 @@ window#waybar.empty #window {
 #privacy                   { color: @red; }
 
 /* ── Actions ── */
+#custom-theme { color: @inkdim; }
+#custom-theme:hover { color: @rose; }
 #custom-lock  { color: @inkdim; }
 #custom-lock:hover  { color: @rose; }
 #custom-power { color: @inkdim; }

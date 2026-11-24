@@ -81,6 +81,7 @@ window#waybar {
 #tray,
 #custom-lock,
 #custom-power,
+#custom-theme,
 #custom-dnd {
     padding: 0 10px;
     color: @text;
@@ -210,7 +211,16 @@ window#waybar.empty #window {
     border-radius: 8px;
 }
 
-/* ── Lock / Power ── */
+/* ── Thème / Lock / Power ── */
+#custom-theme {
+    padding: 0 10px;
+    color: @subtext;
+}
+
+#custom-theme:hover {
+    color: @mauve;
+}
+
 #custom-lock {
     padding: 0 10px;
     color: @subtext;

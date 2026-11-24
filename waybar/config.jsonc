@@ -24,6 +24,7 @@
     "group/system",
     "battery",
     "wireplumber",
+    "custom/theme",
     "custom/lock",
     "custom/power"
   ],
@@ -236,6 +237,15 @@
     "icon-size": 16,
     "spacing": 8,
     "show-passive-items": false
+  },
+
+  // Changement de thème : menu rofi → theme-switch. Pas de sondage : le
+  // module se relit quand theme-switch recharge waybar (SIGUSR2).
+  "custom/theme": {
+    "exec": "~/.config/waybar/script/theme-menu status",
+    "return-type": "json",
+    "interval": "once",
+    "on-click": "~/.config/waybar/script/theme-menu"
   },
 
   "custom/lock": {
