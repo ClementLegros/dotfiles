@@ -5,10 +5,8 @@
 -- on ne remplace que la palette. Le fond reste transparent : c'est celui de
 -- kitty, translucide, qui se voit.
 
-require("catppuccin").setup({
+return {
     flavour = "mocha",
-    transparent_background = true,
-    term_colors = true,
 
     color_overrides = {
         mocha = {
@@ -45,27 +43,4 @@ require("catppuccin").setup({
             lavender  = "#c8a2e0",
         },
     },
-
-    integrations = {
-        blink_cmp = true,
-        telescope = { enabled = true },
-        mason = true,
-        native_lsp = {
-            enabled = true,
-            virtual_text = {
-                errors = { "italic" },
-                hints = { "italic" },
-                warnings = { "italic" },
-                information = { "italic" },
-            },
-            underlines = {
-                errors = { "underline" },
-                hints = { "underline" },
-                warnings = { "underline" },
-                information = { "underline" },
-            },
-        },
-    },
-})
-
-vim.cmd.colorscheme("catppuccin")
+}

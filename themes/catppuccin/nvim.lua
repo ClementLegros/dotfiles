@@ -1,27 +1,10 @@
-require("catppuccin").setup({
-    flavour = "mocha",
-    transparent_background = true,
-    term_colors = true,
-    integrations = {
-        blink_cmp = true,
-        telescope = { enabled = true },
-        mason = true,
-        native_lsp = {
-            enabled = true,
-            virtual_text = {
-                errors = { "italic" },
-                hints = { "italic" },
-                warnings = { "italic" },
-                information = { "italic" },
-            },
-            underlines = {
-                errors = { "underline" },
-                hints = { "underline" },
-                warnings = { "underline" },
-                information = { "underline" },
-            },
-        },
-    },
-})
+-- ─── neovim — apparence ─── Catppuccin Mocha ─────────────────────────────────
+-- Chargé par nvim/lua/plugins/colorscheme.lua via themes/current/nvim.lua.
+--
+-- Ce fichier renvoie les options catppuccin propres au thème ; elles sont
+-- fusionnées par-dessus les options communes (transparence, intégrations) qui
+-- vivent côté nvim. Ici il n'y a rien à surcharger : c'est mocha tel quel.
 
-vim.cmd.colorscheme("catppuccin")
+return {
+    flavour = "mocha",
+}

@@ -9,10 +9,8 @@
 -- aqua / lime / azur. Les teintes chaudes de mocha (peach, yellow, maroon)
 -- deviennent des jaunes filtrés par l'eau plutôt que des oranges terreux.
 
-require("catppuccin").setup({
+return {
     flavour = "mocha",
-    transparent_background = true,
-    term_colors = true,
 
     color_overrides = {
         mocha = {
@@ -49,27 +47,4 @@ require("catppuccin").setup({
             lavender  = "#a5c8ff",
         },
     },
-
-    integrations = {
-        blink_cmp = true,
-        telescope = { enabled = true },
-        mason = true,
-        native_lsp = {
-            enabled = true,
-            virtual_text = {
-                errors = { "italic" },
-                hints = { "italic" },
-                warnings = { "italic" },
-                information = { "italic" },
-            },
-            underlines = {
-                errors = { "underline" },
-                hints = { "underline" },
-                warnings = { "underline" },
-                information = { "underline" },
-            },
-        },
-    },
-})
-
-vim.cmd.colorscheme("catppuccin")
+}

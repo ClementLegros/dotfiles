@@ -306,6 +306,19 @@ pgrep -x firefox >/dev/null 2>&1 \
     && echo "  ! firefox : redémarrer pour appliquer" \
     || echo "  ✓ firefox (au prochain lancement)"
 
-# nvim charge le thème au démarrage ; pas de rechargement à chaud fiable.
-pgrep -x nvim >/dev/null 2>&1 \
-    && echo "  ! nvim : redémarrer les instances ouvertes pour appliquer" || true
+# nvim : chaque instance écoute sur un socket ($XDG_RUNTIME_DIR/nvim.<pid>.0) ;
+# on lui fait rejouer :ThemeReload (défini dans nvim/lua/plugins/colorscheme.lua).
+# --remote-expr est synchrone : `timeout` évite de rester bloqué sur une
+# instance qui ne répond pas (invite « Appuyez sur Entrée », socket orphelin).
+nvim_ok=0 nvim_ko=0
+for sock in "${XDG_RUNTIME_DIR:-/run/user/$UID}"/nvim.*.0; do
+    [[ -S $sock ]] || continue
+    if timeout 3 nvim --server "$sock" --remote-expr 'execute("ThemeReload")' >/dev/null 2>&1; then
+        nvim_ok=$((nvim_ok + 1))
+    else
+        nvim_ko=$((nvim_ko + 1))
+    fi
+done
+[[ $nvim_ok -gt 0 ]] && echo "  ✓ nvim ($nvim_ok instance(s))"
+[[ $nvim_ko -gt 0 ]] && echo "  ! nvim : $nvim_ko instance(s) à relancer ou à recharger avec :ThemeReload"
+exit 0

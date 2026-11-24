@@ -35,7 +35,7 @@ themes/
 │   ├── spicetify.conf   quel thème Spotify sélectionner
 │   ├── spicetify/       le thème Spotify lui-même (color.ini + user.css)
 │   ├── sddm/            écran de connexion (thème SDDM ; installation `sudo`)
-│   ├── nvim.lua         setup du plugin + `vim.cmd.colorscheme(...)`
+│   ├── nvim.lua         renvoie les options catppuccin du thème (la palette)
 │   ├── wallpaper.jpg
 │   └── wallpaper-engine.conf   (optionnel) fond animé Wallpaper Engine
 ├── catppuccin/
@@ -58,7 +58,7 @@ directement, rien à générer :
 | `kitty/kitty.conf` | `include ~/.config/themes/current/kitty.conf` |
 | `waybar/style.css` | `@import url("../themes/current/waybar.css")` |
 | `rofi/config.rasi` | `@theme "~/.config/themes/current/rofi.rasi"` |
-| `nvim/lua/plugins/colorscheme.lua` | `dofile(...)` avec repli sur catppuccin |
+| `nvim/lua/plugins/colorscheme.lua` | `dofile(...)` : la table renvoyée est fusionnée sur les options communes ; sans fichier, catppuccin mocha |
 
 **Ceux qui ne savent pas** — `theme-switch` fait le pont :
 
@@ -244,10 +244,13 @@ sur le flou d'Hyprland (`decoration.blur` et les `layer_rule` de son `hypr.lua`)
 
 ## Limites connues
 
-- **nvim** : le thème est lu au démarrage, il faut relancer les instances
-  ouvertes. Le *plugin* de colorscheme reste déclaré dans `plugins/init.lua` —
-  `frutiger-aero` s'en accommode en ne surchargeant que la palette de
-  catppuccin (`color_overrides`), donc aucun plugin à ajouter.
+- **nvim** : `theme-switch` appelle `:ThemeReload` dans chaque instance ouverte,
+  via son socket (`$XDG_RUNTIME_DIR/nvim.<pid>.0`). Une instance lancée avec un
+  `--listen` personnalisé, ou bloquée sur une invite, n'est pas atteinte : y
+  taper `:ThemeReload` à la main. Le *plugin* de colorscheme reste déclaré dans
+  `plugins/init.lua`, avec les réglages communs (transparence, intégrations) —
+  un thème ne fournit que sa palette (`color_overrides`), donc aucun plugin à
+  ajouter.
 - **rofi** et **hyprlock** lisent leur thème à chaque lancement — rien à
   recharger.
 - **Applis GTK déjà ouvertes** : elles ne relisent pas `settings.ini`. Les
