@@ -1,0 +1,17 @@
+# ─── starship — palette ─── Catppuccin Mocha ─────────────────────────────────
+# Concaténé après starship/base.toml par theme-switch.
+# Reprend à l'identique les couleurs d'origine, sous leurs noms de rôle.
+
+[palettes.theme]
+seg1 = "#f38ba8"   # red      — os + utilisateur
+seg2 = "#fab387"   # peach    — répertoire
+seg3 = "#f9e2af"   # yellow   — git
+seg4 = "#a6e3a1"   # green    — langages
+seg5 = "#74c7ec"   # sapphire — conda / docker
+seg6 = "#b4befe"   # lavender — heure + durée
+
+segfg = "#11111b"  # crust
+
+ok  = "#a6e3a1"    # green
+err = "#f38ba8"    # red
+alt = "#b4befe"    # lavender

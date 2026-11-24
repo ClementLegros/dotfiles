@@ -1,0 +1,22 @@
+# ─── starship — palette ─── Sakura ───────────────────────────────────────────
+# Concaténé après starship/base.toml par theme-switch.
+#
+# Les six segments forment un seul pétale qui se décolore de gauche à droite :
+# rose soutenu → rose pâle. Tous restent assez clairs pour porter le même
+# texte prune (`segfg` est unique).
+
+[palettes.theme]
+seg1 = "#e8806c"   # os + utilisateur — l'ancrage
+seg2 = "#ec9280"   # répertoire
+seg3 = "#f0a494"   # git
+seg4 = "#f3b5a7"   # langages
+seg5 = "#f5c3b7"   # conda / docker
+seg6 = "#f6cfc5"   # heure + durée
+
+segfg = "#3a2420"  # texte sur segment : prune
+
+# Posés sur le fond du terminal (#1f1513, sombre) : il leur faut des valeurs
+# vives, pas les pastels des segments.
+ok  = "#9fc79a"    # ❯ succès — jeune feuille
+err = "#ff6b7a"    # ❯ échec — camélia
+alt = "#f38f78"    # modes vim — rose

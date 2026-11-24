@@ -30,7 +30,7 @@
 #  lui, est dans un dossier qui l'est.)
 dunst/dunstrc.d/50-theme.conf
 # starship.toml = starship/base.toml + themes/current/starship.toml
-starship.toml
+/starship.toml
 
 # ── Noise inside the whitelisted dirs ──
 # (leading **/ so these match at any depth, not just the repo root)

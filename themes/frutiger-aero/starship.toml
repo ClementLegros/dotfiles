@@ -1,0 +1,29 @@
+# ─── starship — palette ─── Frutiger Aero ────────────────────────────────────
+# Concaténé après starship/base.toml par theme-switch.
+#
+# Le prompt est une suite de segments powerline séparés par des demi-cercles :
+# lu de gauche à droite, c'est déjà une bande. On en fait donc de l'EAU —
+# un dégradé continu qui part de l'azur et remonte vers la surface :
+#
+#   azur → cyan → turquoise → vert d'eau → écume citron
+#
+# Tous les segments restent CLAIRS, avec un texte bleu nuit unique. C'est ce
+# qui permet un seul `segfg` : un dégradé qui irait du sombre au clair
+# obligerait à changer de couleur de texte en cours de route, ce que starship
+# ne sait pas faire sur une palette.
+
+[palettes.theme]
+seg1 = "#3ab4ee"   # os + utilisateur — azur, l'ancrage
+seg2 = "#5cc8f2"   # répertoire
+seg3 = "#7ddaf3"   # git
+seg4 = "#9ae9ea"   # langages — bascule vers le turquoise
+seg5 = "#b4f0d2"   # conda / docker — vert d'eau
+seg6 = "#cdf3a8"   # heure + durée — écume citron, l'accent vert Aero
+
+segfg = "#04263f"  # texte sur segment : bleu nuit, lisible sur les six
+
+# Ces trois-là ne sont PAS posés sur un segment mais sur le fond du terminal
+# (#041e33) : il leur faut des valeurs vives, pas les teintes pastel ci-dessus.
+ok  = "#9ede4a"    # ❯ succès — lime
+err = "#ff8f7e"    # ❯ échec — corail
+alt = "#7fe3f0"    # modes vim — aqua
